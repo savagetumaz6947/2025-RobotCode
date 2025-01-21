@@ -10,16 +10,23 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.Arm.ArmLocation;
+import frc.robot.subsystems.Pivot.PivotLocation;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -33,12 +40,25 @@ public class RobotContainer {
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
+    private final SendableChooser<Command> autoChooser;
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController operator = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final Pivot pivot = new Pivot();
+    public final Arm arm = new Arm();
+    public final Elevator elevator = new Elevator();
 
     public RobotContainer() {
+        // Build an auto chooser. This will use Commands.none() as the default option.
+        autoChooser = AutoBuilder.buildAutoChooser();
+
+        // Another option that allows you to specify the default auto by its name
+        // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
+
+        SmartDashboard.putData("Auto Chooser", autoChooser);
+
         configureBindings();
     }
     private DoubleSupplier speedSupplier = () -> MaxSpeed;
@@ -62,17 +82,27 @@ public class RobotContainer {
             speedSupplier = () -> MaxSpeed;
         }));
 
+        joystick.x().onTrue(pivot.in().repeatedly().withTimeout(3));
+        operator.b().onTrue(pivot.out().repeatedly().withTimeout(2));
+        joystick.leftBumper().onTrue(new ParallelCommandGroup(
+            arm.eStop(),
+            pivot.eStop(),
+            new InstantCommand(() -> {}, drivetrain)
+        ));
+
+        joystick.leftTrigger().onTrue(pivot.pivotTurn(PivotLocation.OutTake));
+        joystick.rightTrigger().onTrue(pivot.pivotTurn(PivotLocation.Intake));
+
+        elevator.setDefaultCommand(elevator.set(operator::getRightX));
+
+        arm.setDefaultCommand(arm.turn(() -> operator.getLeftX()));
+        operator.x().onTrue(arm.turn(ArmLocation.outtake));
+        operator.a().onTrue(arm.turn(ArmLocation.intake));
+
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         joystick.b().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
-
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -81,6 +111,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return autoChooser.getSelected();
     }
 }
