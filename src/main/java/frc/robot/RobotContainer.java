@@ -26,7 +26,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Arm.ArmLocation;
-import frc.robot.subsystems.Elevator.elevatorPosition;
+import frc.robot.subsystems.Elevator.ElevatorPosition;
 import frc.robot.subsystems.Pivot.PivotLocation;
 
 public class RobotContainer {
@@ -90,6 +90,7 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(new ParallelCommandGroup(
             arm.eStop(),
             pivot.eStop(),
+            elevator.eStop(),
             new InstantCommand(() -> {}, drivetrain)
         ));
 
@@ -97,17 +98,17 @@ public class RobotContainer {
             
         ));
 
-        joystick.leftTrigger().onTrue(pivot.pivotTurn(PivotLocation.OutTake));
-        joystick.rightTrigger().onTrue(pivot.pivotTurn(PivotLocation.Intake));
+        joystick.leftTrigger().onTrue(pivot.set(PivotLocation.OUTTAKE));
+        joystick.rightTrigger().onTrue(pivot.set(PivotLocation.INTAKE));
 
         elevator.setDefaultCommand(elevator.set(operator::getRightX));
-        operator.b().onTrue(elevator.setPosition(elevatorPosition.Mid));
-        operator.y().onTrue(elevator.setPosition(elevatorPosition.Top));
-        operator.rightBumper().onTrue(elevator.setPosition(elevatorPosition.Bottom));
+        operator.b().onTrue(elevator.set(ElevatorPosition.MID));
+        operator.y().onTrue(elevator.set(ElevatorPosition.TOP));
+        operator.rightBumper().onTrue(elevator.set(ElevatorPosition.BOTTOM));
 
-        arm.setDefaultCommand(arm.turn(() -> operator.getLeftX()));
-        operator.x().onTrue(arm.turn(ArmLocation.outtake));
-        operator.a().onTrue(arm.turn(ArmLocation.intake));
+        arm.setDefaultCommand(arm.set(() -> operator.getLeftX()));
+        operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
+        operator.a().onTrue(arm.set(ArmLocation.INTAKE));
 
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         joystick.rightBumper().whileTrue(drivetrain.applyRequest(() ->

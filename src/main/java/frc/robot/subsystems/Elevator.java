@@ -14,13 +14,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Elevator extends SubsystemBase {
     private TalonFX left = new TalonFX(1, "rio");
     private TalonFX right = new TalonFX(2, "rio");
+    final PositionVoltage request = new PositionVoltage(1).withSlot(0);
 
-    public enum elevatorPosition {
-        Bottom, Mid, Top
+    public enum ElevatorPosition {
+        BOTTOM, MID, TOP, UNDEFINED
     }
 
-    final PositionVoltage positionVoltage = new PositionVoltage(1).withSlot(0);
-    
+    private ElevatorPosition state = ElevatorPosition.BOTTOM;
+
     public Elevator() {
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
         elevatorSlot0Configs.kP = 0.5;
@@ -31,7 +32,6 @@ public class Elevator extends SubsystemBase {
         left.setPosition(0);
 
         right.setControl(new Follower(1, false));
-        left.setPosition(0);
     }
 
     public Command set(DoubleSupplier voltage){
@@ -42,25 +42,38 @@ public class Elevator extends SubsystemBase {
             } else {
                 left.setVoltage(voltage.getAsDouble() * 2 + getFeedForward());
             }
+            state = ElevatorPosition.UNDEFINED;
         });
     }
 
-    public Command setPosition(elevatorPosition position){
+    public Command set(ElevatorPosition position){
         return this.run(() ->{
-            if (position == elevatorPosition.Bottom) {
-                left.setControl(positionVoltage.withPosition(1));
+            if (position == ElevatorPosition.BOTTOM) {
+                left.setControl(request.withPosition(1));
             }
-            else if (position == elevatorPosition.Mid) {
-                left.setControl(positionVoltage.withPosition(14.2));
+            else if (position == ElevatorPosition.MID) {
+                left.setControl(request.withPosition(14.2));
             }
-            else if (position == elevatorPosition.Top) {
-                left.setControl(positionVoltage.withPosition(33.9));
+            else if (position == ElevatorPosition.TOP) {
+                left.setControl(request.withPosition(33.9));
             }
+            state = position;
         });
     }
 
     public double getFeedForward() {
         return 0.24;
+    }
+
+    public ElevatorPosition getState() {
+        return state;
+    }
+
+    public Command eStop() {
+        return this.run(() -> {
+            left.set(0);
+            state = ElevatorPosition.UNDEFINED;
+        });
     }
 
     @Override

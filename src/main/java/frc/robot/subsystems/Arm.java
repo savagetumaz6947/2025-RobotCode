@@ -15,8 +15,10 @@ public class Arm extends SubsystemBase {
     private final PositionVoltage request = new PositionVoltage(0.9).withSlot(0);
 
     public enum ArmLocation{
-        intake, outtake;
+        INTAKE, OUTTAKE, UNDEFINED
     }
+
+    private ArmLocation state = ArmLocation.INTAKE;
 
     public Arm () {
         Slot0Configs armSlot0Configs = new Slot0Configs();
@@ -27,20 +29,22 @@ public class Arm extends SubsystemBase {
         arm.setPosition(0);
     }
 
-    public Command turn (DoubleSupplier volt){
+    public Command set(DoubleSupplier volt){
         return this.run(() -> {
             arm.setVoltage(volt.getAsDouble()*1 + getFeedForward());
+            state = ArmLocation.UNDEFINED;
         });
     }
 
-    public Command turn (ArmLocation location){
+    public Command set(ArmLocation location){
         return this.run(() -> {
-            if (location == ArmLocation.intake) {
+            if (location == ArmLocation.INTAKE) {
                 arm.setControl(request.withPosition(0));
             }
-            else if (location == ArmLocation.outtake) {
+            else if (location == ArmLocation.OUTTAKE) {
                 arm.setControl(request.withPosition(degreeToEncoder(25)).withFeedForward(getFeedForward()));
             }
+            state = location;
         });
     }
 
@@ -56,9 +60,14 @@ public class Arm extends SubsystemBase {
         return (degree + 16)/11.09;
     }
 
+    public ArmLocation getState() {
+        return state;
+    }
+
     public Command eStop() {
         return this.run(() -> {
             arm.setVoltage(0);
+            state = ArmLocation.UNDEFINED;
         });
     }
 

@@ -16,12 +16,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Pivot extends SubsystemBase {
     private SparkMax intake = new SparkMax(51, MotorType.kBrushless);
     private TalonFX pivot = new TalonFX(4, "rio");
+    final PositionVoltage request = new PositionVoltage(3.75).withSlot(0);
 
     public enum PivotLocation {
-        Intake, OutTake
+        INTAKE, OUTTAKE, UNDEFINED
     }
 
-    final PositionVoltage positionVoltage = new PositionVoltage(3.75).withSlot(0);
+    private PivotLocation state = PivotLocation.INTAKE;
 
     public Pivot () {
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
@@ -41,15 +42,20 @@ public class Pivot extends SubsystemBase {
         }));
     }
 
-    public Command pivotTurn(PivotLocation location) {
+    public Command set(PivotLocation location) {
         return this.run(() -> {
-            if (location == PivotLocation.Intake){
-                pivot.setControl(positionVoltage.withPosition(0));
+            if (location == PivotLocation.INTAKE){
+                pivot.setControl(request.withPosition(0));
             }
-            else if (location == PivotLocation.OutTake){
-                pivot.setControl(positionVoltage.withPosition(3.75));
+            else if (location == PivotLocation.OUTTAKE){
+                pivot.setControl(request.withPosition(3.75));
             }
+            state = location;
         });
+    }
+
+    public PivotLocation getState() {
+        return state;
     }
 
     public Command in() {
@@ -68,6 +74,7 @@ public class Pivot extends SubsystemBase {
         return this.run(() -> {
             intake.setVoltage(0);
             pivot.setVoltage(0);
+            state = PivotLocation.UNDEFINED;
         });
     }
 
