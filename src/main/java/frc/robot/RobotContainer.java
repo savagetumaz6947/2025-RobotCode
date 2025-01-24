@@ -26,7 +26,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Arm.ArmLocation;
-import frc.robot.subsystems.Elevator.ElevatorPosition;
+import frc.robot.subsystems.Elevator.ElevatorLocation;
 import frc.robot.subsystems.Pivot.PivotLocation;
 
 public class RobotContainer {
@@ -102,9 +102,9 @@ public class RobotContainer {
         joystick.rightTrigger().onTrue(pivot.set(PivotLocation.INTAKE));
 
         elevator.setDefaultCommand(elevator.set(operator::getRightX));
-        operator.b().onTrue(elevator.set(ElevatorPosition.MID));
-        operator.y().onTrue(elevator.set(ElevatorPosition.TOP));
-        operator.rightBumper().onTrue(elevator.set(ElevatorPosition.BOTTOM));
+        operator.b().onTrue(elevator.set(ElevatorLocation.MID));
+        operator.y().onTrue(elevator.set(ElevatorLocation.TOP));
+        operator.rightBumper().onTrue(elevator.set(ElevatorLocation.BOTTOM));
 
         arm.setDefaultCommand(arm.set(() -> operator.getLeftX()));
         operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));

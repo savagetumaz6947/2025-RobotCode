@@ -16,11 +16,11 @@ public class Elevator extends SubsystemBase {
     private TalonFX right = new TalonFX(2, "rio");
     final PositionVoltage request = new PositionVoltage(1).withSlot(0);
 
-    public enum ElevatorPosition {
+    public enum ElevatorLocation {
         BOTTOM, MID, TOP, UNDEFINED
     }
 
-    private ElevatorPosition state = ElevatorPosition.BOTTOM;
+    private ElevatorLocation state = ElevatorLocation.BOTTOM;
 
     public Elevator() {
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
@@ -42,19 +42,19 @@ public class Elevator extends SubsystemBase {
             } else {
                 left.setVoltage(voltage.getAsDouble() * 2 + getFeedForward());
             }
-            state = ElevatorPosition.UNDEFINED;
+            state = ElevatorLocation.UNDEFINED;
         });
     }
 
-    public Command set(ElevatorPosition position){
+    public Command set(ElevatorLocation position){
         return this.run(() ->{
-            if (position == ElevatorPosition.BOTTOM) {
+            if (position == ElevatorLocation.BOTTOM) {
                 left.setControl(request.withPosition(1));
             }
-            else if (position == ElevatorPosition.MID) {
+            else if (position == ElevatorLocation.MID) {
                 left.setControl(request.withPosition(14.2));
             }
-            else if (position == ElevatorPosition.TOP) {
+            else if (position == ElevatorLocation.TOP) {
                 left.setControl(request.withPosition(33.9));
             }
             state = position;
@@ -65,14 +65,14 @@ public class Elevator extends SubsystemBase {
         return 0.24;
     }
 
-    public ElevatorPosition getState() {
+    public ElevatorLocation getState() {
         return state;
     }
 
     public Command eStop() {
         return this.run(() -> {
             left.set(0);
-            state = ElevatorPosition.UNDEFINED;
+            state = ElevatorLocation.UNDEFINED;
         });
     }
 
