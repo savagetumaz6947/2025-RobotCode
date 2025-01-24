@@ -23,9 +23,9 @@ public class Elevator extends SubsystemBase {
     
     public Elevator() {
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
-        elevatorSlot0Configs.kP = 1;
-        elevatorSlot0Configs.kI = 0;
-        elevatorSlot0Configs.kD = 0;
+        elevatorSlot0Configs.kP = 0.5;
+        elevatorSlot0Configs.kI = 0.025;
+        elevatorSlot0Configs.kD = 0.2;
         
         left.getConfigurator().apply(elevatorSlot0Configs);
         left.setPosition(0);
@@ -48,13 +48,13 @@ public class Elevator extends SubsystemBase {
     public Command setPosition(elevatorPosition position){
         return this.run(() ->{
             if (position == elevatorPosition.Bottom) {
-                left.setControl(positionVoltage.withPosition(0));
-            }
-            else if (position == elevatorPosition.Mid) {
                 left.setControl(positionVoltage.withPosition(1));
             }
+            else if (position == elevatorPosition.Mid) {
+                left.setControl(positionVoltage.withPosition(14.2));
+            }
             else if (position == elevatorPosition.Top) {
-                left.setControl(positionVoltage.withPosition(2));
+                left.setControl(positionVoltage.withPosition(33.9));
             }
         });
     }
