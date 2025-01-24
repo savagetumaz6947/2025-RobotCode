@@ -6,6 +6,7 @@ import java.util.Map;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,19 +21,18 @@ public class Pivot extends SubsystemBase {
         INTAKE, OUTTAKE, UNDEFINED
     }
 
-    public Map<PivotLocation, Double> locationsMap = new HashMap<>();
+    private Map<PivotLocation, Double> locationsMap = new HashMap<>();
 
     private PivotLocation state = PivotLocation.INTAKE;
 
     public Pivot () {
-        // TODO: Neutral mode: brake
-
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
         pivotSlot0Configs.kP = 1.05;
         pivotSlot0Configs.kI = 0.35;
         pivotSlot0Configs.kD = 0.085;
 
         pivot.getConfigurator().apply(pivotSlot0Configs);
+        pivot.setNeutralMode(NeutralModeValue.Brake);
         pivot.setPosition(0);
 
         locationsMap.put(PivotLocation.INTAKE, 0.0);

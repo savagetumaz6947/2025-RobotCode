@@ -27,12 +27,12 @@ public class Vision {
     }
 
     /**
-     * Constructs a Vision object with the predefined field layout
+     * Constructs a Vision object with the kDefaultField field layout
      * @param cameraName The name of the PhotonCamera
      * @param robotToCam The location of the camera relative to the robot center
      */
     public Vision(String cameraName, Transform3d robotToCam) {
-        this(cameraName, robotToCam, AprilTagFields.k2024Crescendo.loadAprilTagLayoutField());
+        this(cameraName, robotToCam, AprilTagFields.kDefaultField.loadAprilTagLayoutField());
     }
 
     /**
