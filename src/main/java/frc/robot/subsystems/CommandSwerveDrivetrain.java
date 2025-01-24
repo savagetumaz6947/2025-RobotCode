@@ -2,13 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
 
-import java.util.Optional;
 import java.util.function.Supplier;
-
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -21,7 +15,6 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -34,7 +27,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -52,10 +44,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private RobotConfig config;
 
     AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
-    private PhotonCamera camera = new PhotonCamera("BR_Cam");
     Transform3d robotToCam = new Transform3d(new Translation3d(-0.26, -0.23, 0.22), new Rotation3d(Degrees.of(0), Degrees.of(-30), Degrees.of(150)));
-    PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCam);
-    Field2d vision = new Field2d();
+    private Vision vision = new Vision("BR_Cam", robotToCam, aprilTagFieldLayout);
 
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
@@ -216,19 +206,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
-        Optional<EstimatedRobotPose> visionEstPose = Optional.empty();
-        for (var res : camera.getAllUnreadResults()) {
-            visionEstPose = photonPoseEstimator.update(res);
-        }
-        if (visionEstPose.isPresent()) {
-            if (MathUtil.isNear(0, getState().Pose.getX(), 0.01)) {
-                // It is still at the default startig position, we use AprilTag to bring it back
-                this.resetPose(visionEstPose.get().estimatedPose.toPose2d());
-            }
-            this.addVisionMeasurement(visionEstPose.get().estimatedPose.toPose2d(), visionEstPose.get().timestampSeconds);
-            vision.setRobotPose(visionEstPose.get().estimatedPose.toPose2d());
-            SmartDashboard.putData("VisionPose", vision);
-        }
+
+        var visionEst = vision.getEstimatedGlobalPose();
+        visionEst.ifPresent(
+            est -> {
+                // Hours wasted because CTRE decided to use FPGA Time: 5
+                this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
+        });
     }
 
     private void startSimThread() {

@@ -25,6 +25,8 @@ public class Pivot extends SubsystemBase {
     private PivotLocation state = PivotLocation.INTAKE;
 
     public Pivot () {
+        // TODO: Neutral mode: brake
+
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
         pivotSlot0Configs.kP = 1.05;
         pivotSlot0Configs.kI = 0.35;
