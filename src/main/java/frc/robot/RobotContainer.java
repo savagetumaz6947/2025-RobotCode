@@ -26,6 +26,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Arm.ArmLocation;
+import frc.robot.subsystems.Elevator.elevatorPosition;
 import frc.robot.subsystems.Pivot.PivotLocation;
 
 public class RobotContainer {
@@ -49,6 +50,8 @@ public class RobotContainer {
     public final Pivot pivot = new Pivot();
     public final Arm arm = new Arm();
     public final Elevator elevator = new Elevator();
+
+    
 
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
@@ -90,10 +93,17 @@ public class RobotContainer {
             new InstantCommand(() -> {}, drivetrain)
         ));
 
+        operator.leftBumper().onTrue(new ParallelCommandGroup(
+            
+        ));
+
         joystick.leftTrigger().onTrue(pivot.pivotTurn(PivotLocation.OutTake));
         joystick.rightTrigger().onTrue(pivot.pivotTurn(PivotLocation.Intake));
 
         elevator.setDefaultCommand(elevator.set(operator::getRightX));
+        operator.b().onTrue(elevator.setPosition(elevatorPosition.Mid));
+        operator.y().onTrue(elevator.setPosition(elevatorPosition.Top));
+        operator.rightBumper().onTrue(elevator.setPosition(elevatorPosition.Bottom));
 
         arm.setDefaultCommand(arm.turn(() -> operator.getLeftX()));
         operator.x().onTrue(arm.turn(ArmLocation.outtake));
