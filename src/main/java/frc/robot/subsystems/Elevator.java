@@ -35,7 +35,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command set(DoubleSupplier voltage){
-        return this.run(() -> {
+        return this.runOnce(() -> {
             if ((left.getPosition().getValueAsDouble() <= 0 && voltage.getAsDouble() <= 0) || 
                 (left.getPosition().getValueAsDouble() >= 99999 && voltage.getAsDouble() >= 0)) {
                 left.setVoltage(getFeedForward());
@@ -47,15 +47,15 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command set(ElevatorLocation position){
-        return this.run(() ->{
+        return this.runOnce(() ->{
             if (position == ElevatorLocation.BOTTOM) {
-                left.setControl(request.withPosition(1));
+                left.setControl(request.withPosition(3).withFeedForward(getFeedForward()));
             }
             else if (position == ElevatorLocation.MID) {
-                left.setControl(request.withPosition(14.2));
+                left.setControl(request.withPosition(14.2).withFeedForward(getFeedForward()));
             }
             else if (position == ElevatorLocation.TOP) {
-                left.setControl(request.withPosition(33.9));
+                left.setControl(request.withPosition(33.9).withFeedForward(getFeedForward()));
             }
             state = position;
         });
@@ -70,7 +70,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command eStop() {
-        return this.run(() -> {
+        return this.runOnce(() -> {
             left.set(0);
             state = ElevatorLocation.UNDEFINED;
         });

@@ -1,11 +1,14 @@
 package frc.robot.subsystems;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,6 +21,8 @@ public class Arm extends SubsystemBase {
         INTAKE, OUTTAKE, UNDEFINED
     }
 
+    public Map<ArmLocation, Double> locationsMap = new HashMap<>();
+
     private ArmLocation state = ArmLocation.INTAKE;
 
     public Arm () {
@@ -27,10 +32,15 @@ public class Arm extends SubsystemBase {
         armSlot0Configs.kD = 0.085;
         arm.getConfigurator().apply(armSlot0Configs);
         arm.setPosition(0);
+
+        locationsMap.put(ArmLocation.INTAKE, degreeToEncoder(-32));
+        locationsMap.put(ArmLocation.OUTTAKE, degreeToEncoder(25));
+
+        // this.setDefaultCommand(this.set(() -> 0.0));
     }
 
     public Command set(DoubleSupplier volt){
-        return this.run(() -> {
+        return this.runOnce(() -> {
             arm.setVoltage(volt.getAsDouble()*1 + getFeedForward());
             state = ArmLocation.UNDEFINED;
         });
@@ -38,26 +48,23 @@ public class Arm extends SubsystemBase {
 
     public Command set(ArmLocation location){
         return this.run(() -> {
-            if (location == ArmLocation.INTAKE) {
-                arm.setControl(request.withPosition(0));
-            }
-            else if (location == ArmLocation.OUTTAKE) {
-                arm.setControl(request.withPosition(degreeToEncoder(25)).withFeedForward(getFeedForward()));
-            }
+            arm.setControl(request.withPosition(locationsMap.get(location)).withFeedForward(getFeedForward()));
             state = location;
+        }).until(() -> {
+            return MathUtil.isNear(locationsMap.get(location), arm.getPosition().getValueAsDouble(), 0.05);
         });
     }
 
     public double getFeedForward() {
-        return getAbsoluteDegrees() * -3.35e-3 - 0.139;
+        return Math.cos(Math.toRadians(90 - getAbsoluteDegrees())) * -0.42;
     }
 
     private double getAbsoluteDegrees() {
-        return arm.getPosition().getValueAsDouble() * 11.09 - 16;
+        return arm.getPosition().getValueAsDouble() * 11.09 - 32;
     }
 
     private double degreeToEncoder(double degree) {
-        return (degree + 16)/11.09;
+        return (degree + 32)/11.09;
     }
 
     public ArmLocation getState() {
@@ -65,7 +72,7 @@ public class Arm extends SubsystemBase {
     }
 
     public Command eStop() {
-        return this.run(() -> {
+        return this.runOnce(() -> {
             arm.setVoltage(0);
             state = ArmLocation.UNDEFINED;
         });

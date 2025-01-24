@@ -16,6 +16,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -24,9 +25,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Arm.ArmLocation;
-import frc.robot.subsystems.Elevator.ElevatorLocation;
+import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.Pivot.PivotLocation;
 
 public class RobotContainer {
@@ -47,6 +49,7 @@ public class RobotContainer {
     private final CommandXboxController operator = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final Intake intake = new Intake();
     public final Pivot pivot = new Pivot();
     public final Arm arm = new Arm();
     public final Elevator elevator = new Elevator();
@@ -78,45 +81,54 @@ public class RobotContainer {
             )
         );
 
-        joystick.y().onTrue(new InstantCommand(() -> {
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> {
             speedSupplier = () -> MaxSpeed * 0.35;
         }));
-        joystick.y().onFalse(new InstantCommand(() -> {
+        joystick.rightTrigger().onFalse(new InstantCommand(() -> {
             speedSupplier = () -> MaxSpeed * .85; // default speed is 85% theoretical max speed
         }));
-
-        joystick.x().onTrue(pivot.in().repeatedly().withTimeout(3));
-        operator.b().onTrue(pivot.out().repeatedly().withTimeout(2));
-        joystick.leftBumper().onTrue(new ParallelCommandGroup(
-            arm.eStop(),
-            pivot.eStop(),
-            elevator.eStop(),
-            new InstantCommand(() -> {}, drivetrain)
-        ));
-
-        operator.leftBumper().onTrue(new ParallelCommandGroup(
-            
-        ));
-
-        joystick.leftTrigger().onTrue(pivot.set(PivotLocation.OUTTAKE));
-        joystick.rightTrigger().onTrue(pivot.set(PivotLocation.INTAKE));
-
-        elevator.setDefaultCommand(elevator.set(operator::getRightX));
-        operator.b().onTrue(elevator.set(ElevatorLocation.MID));
-        operator.y().onTrue(elevator.set(ElevatorLocation.TOP));
-        operator.rightBumper().onTrue(elevator.set(ElevatorLocation.BOTTOM));
-
-        arm.setDefaultCommand(arm.set(() -> operator.getLeftX()));
-        operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
-        operator.a().onTrue(arm.set(ArmLocation.INTAKE));
-
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        
+        joystick.leftTrigger().whileTrue(drivetrain.applyRequest(() -> brake));
         joystick.rightBumper().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        joystick.x().onTrue(intake.set(IntakeState.IN).withTimeout(3));
+        joystick.a().onTrue(intake.set(IntakeState.OUT).withTimeout(2));
+
+        joystick.b().onTrue(
+            new ConditionalCommand(new ParallelCommandGroup(
+                arm.set(ArmLocation.OUTTAKE),
+                pivot.set(PivotLocation.OUTTAKE)
+            ), new ParallelCommandGroup(
+                arm.set(ArmLocation.INTAKE),
+                pivot.set(PivotLocation.INTAKE)
+            ), () -> arm.getState() == ArmLocation.INTAKE)
+        );
+
+        joystick.y().onTrue(arm.set(ArmLocation.INTAKE));
+
+        joystick.leftBumper().or(operator.leftBumper()).onTrue(new ParallelCommandGroup(
+            arm.eStop(),
+            pivot.eStop(),
+            elevator.eStop(),
+            new InstantCommand(() -> {}, drivetrain)
+        ));
+
+        operator.y().whileTrue(elevator.set(operator::getLeftX).repeatedly());
+        operator.a().whileTrue(arm.set(operator::getLeftX).repeatedly());
+
+        // arm.setDefaultCommand(arm.set(() -> operator.getLeftX()));
+        operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
+        operator.b().onTrue(arm.set(ArmLocation.INTAKE));
+
+        // operator.rightBumper().onTrue(elevator.set(ElevatorLocation.MID));
+        // operator.leftBumper().onTrue(elevator.set(ElevatorLocation.TOP));
+        // operator.rightTrigger().onTrue(elevator.set(ElevatorLocation.BOTTOM));
+        
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

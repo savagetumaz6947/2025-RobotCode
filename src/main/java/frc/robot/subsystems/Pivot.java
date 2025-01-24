@@ -1,26 +1,25 @@
 package frc.robot.subsystems;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Pivot extends SubsystemBase {
-    private SparkMax intake = new SparkMax(51, MotorType.kBrushless);
     private TalonFX pivot = new TalonFX(4, "rio");
     final PositionVoltage request = new PositionVoltage(3.75).withSlot(0);
 
     public enum PivotLocation {
         INTAKE, OUTTAKE, UNDEFINED
     }
+    public Map<PivotLocation, Double> locationsMap = new HashMap<>();
 
     private PivotLocation state = PivotLocation.INTAKE;
 
@@ -33,24 +32,20 @@ public class Pivot extends SubsystemBase {
         pivot.getConfigurator().apply(pivotSlot0Configs);
         pivot.setPosition(0);
 
-        SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
-        sparkMaxConfig.smartCurrentLimit(10, 10);
-        intake.configure(sparkMaxConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        locationsMap.put(PivotLocation.INTAKE, 0.0);
+        locationsMap.put(PivotLocation.OUTTAKE, 3.75);
 
         this.setDefaultCommand(this.run(() -> {
-            intake.setVoltage(0.5);
+            pivot.set(0);
         }));
     }
 
     public Command set(PivotLocation location) {
         return this.run(() -> {
-            if (location == PivotLocation.INTAKE){
-                pivot.setControl(request.withPosition(0));
-            }
-            else if (location == PivotLocation.OUTTAKE){
-                pivot.setControl(request.withPosition(3.75));
-            }
+            pivot.setControl(request.withPosition(locationsMap.get(location)));
             state = location;
+        }).until(() -> {
+            return MathUtil.isNear(locationsMap.get(location), pivot.getPosition().getValueAsDouble(), 0.05);
         });
     }
 
@@ -58,21 +53,8 @@ public class Pivot extends SubsystemBase {
         return state;
     }
 
-    public Command in() {
-        return this.run(() -> {
-            intake.setVoltage(8);
-        }).repeatedly();
-    }
-
-    public Command out(){
-        return this.run(() -> {
-            intake.setVoltage(-2);
-        }).repeatedly();
-    }
-
     public Command eStop() {
-        return this.run(() -> {
-            intake.setVoltage(0);
+        return this.runOnce(() -> {
             pivot.setVoltage(0);
             state = PivotLocation.UNDEFINED;
         });
@@ -80,8 +62,6 @@ public class Pivot extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Pivot/Intake/AppliedOutput", intake.getBusVoltage() * intake.getAppliedOutput());
-        SmartDashboard.putNumber("Pivot/Intake/OutputCurrent", intake.getOutputCurrent());
         SmartDashboard.putNumber("Pivot/Pivot/Encoder", pivot.getPosition().getValueAsDouble());
     }
 }
