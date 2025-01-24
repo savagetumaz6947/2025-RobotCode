@@ -37,7 +37,7 @@ public class Pivot extends SubsystemBase {
         intake.configure(sparkMaxConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         this.setDefaultCommand(this.run(() -> {
-            intake.setVoltage(-0.5);
+            intake.setVoltage(0.5);
         }));
     }
 
@@ -54,13 +54,13 @@ public class Pivot extends SubsystemBase {
 
     public Command in() {
         return this.run(() -> {
-            intake.setVoltage(-8);
+            intake.setVoltage(8);
         }).repeatedly();
     }
 
     public Command out(){
         return this.run(() -> {
-            intake.setVoltage(1);
+            intake.setVoltage(-2);
         }).repeatedly();
     }
 
