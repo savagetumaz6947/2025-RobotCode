@@ -19,6 +19,7 @@ public class Pivot extends SubsystemBase {
     public enum PivotLocation {
         INTAKE, OUTTAKE, UNDEFINED
     }
+
     public Map<PivotLocation, Double> locationsMap = new HashMap<>();
 
     private PivotLocation state = PivotLocation.INTAKE;
@@ -35,9 +36,7 @@ public class Pivot extends SubsystemBase {
         locationsMap.put(PivotLocation.INTAKE, 0.0);
         locationsMap.put(PivotLocation.OUTTAKE, 3.75);
 
-        this.setDefaultCommand(this.run(() -> {
-            pivot.set(0);
-        }));
+        this.setDefaultCommand(this.set(PivotLocation.INTAKE).repeatedly());
     }
 
     public Command set(PivotLocation location) {

@@ -21,7 +21,7 @@ public class Arm extends SubsystemBase {
         INTAKE, OUTTAKE, UNDEFINED
     }
 
-    public Map<ArmLocation, Double> locationsMap = new HashMap<>();
+    private Map<ArmLocation, Double> locationsMap = new HashMap<>();
 
     private ArmLocation state = ArmLocation.INTAKE;
 
@@ -30,13 +30,14 @@ public class Arm extends SubsystemBase {
         armSlot0Configs.kP = 0.6;
         armSlot0Configs.kI = 0.15;
         armSlot0Configs.kD = 0.085;
+
         arm.getConfigurator().apply(armSlot0Configs);
         arm.setPosition(0);
 
         locationsMap.put(ArmLocation.INTAKE, degreeToEncoder(-32));
         locationsMap.put(ArmLocation.OUTTAKE, degreeToEncoder(25));
 
-        // this.setDefaultCommand(this.set(() -> 0.0));
+        this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
     }
 
     public Command set(DoubleSupplier volt){
@@ -50,9 +51,7 @@ public class Arm extends SubsystemBase {
         return this.run(() -> {
             arm.setControl(request.withPosition(locationsMap.get(location)).withFeedForward(getFeedForward()));
             state = location;
-        }).until(() -> {
-            return MathUtil.isNear(locationsMap.get(location), arm.getPosition().getValueAsDouble(), 0.05);
-        });
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), arm.getPosition().getValueAsDouble(), 0.05));
     }
 
     public double getFeedForward() {

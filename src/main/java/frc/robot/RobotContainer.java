@@ -45,23 +45,20 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final SendableChooser<Command> autoChooser;
 
+    // Defining joysticks
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
 
+    // Defining subsystems
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final Intake intake = new Intake();
     public final Pivot pivot = new Pivot();
     public final Arm arm = new Arm();
     public final Elevator elevator = new Elevator();
 
-    
-
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
         autoChooser = AutoBuilder.buildAutoChooser();
-
-        // Another option that allows you to specify the default auto by its name
-        // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -96,8 +93,8 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        joystick.x().onTrue(intake.set(IntakeState.IN).withTimeout(3));
-        joystick.a().onTrue(intake.set(IntakeState.OUT).withTimeout(2));
+        joystick.x().onTrue(intake.set(IntakeState.IN).repeatedly().withTimeout(3));
+        joystick.a().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(2));
 
         joystick.b().onTrue(
             new ConditionalCommand(new ParallelCommandGroup(

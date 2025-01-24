@@ -19,7 +19,9 @@ public class Intake extends SubsystemBase {
     public enum IntakeState {
         IN, OUT, DEFAULT
     };
+
     private Map<IntakeState, Double> stateMap = new HashMap<>();
+
     private IntakeState state = IntakeState.DEFAULT;
 
     public Intake() {
@@ -31,14 +33,11 @@ public class Intake extends SubsystemBase {
         stateMap.put(IntakeState.IN, 8.0);
         stateMap.put(IntakeState.OUT, -2.0);
         
-        this.setDefaultCommand(this.run(() -> {
-            intake.setVoltage(stateMap.get(IntakeState.DEFAULT));
-            state = IntakeState.DEFAULT;
-        }));
+        this.setDefaultCommand(this.set(IntakeState.DEFAULT).repeatedly());
     }
 
     public Command set(IntakeState state) {
-        return this.run(() -> {
+        return this.runOnce(() -> {
             intake.setVoltage(stateMap.get(state));
             this.state = state;
         });
