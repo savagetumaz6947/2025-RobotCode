@@ -4,6 +4,10 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import java.util.function.Supplier;
 
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -43,9 +47,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private RobotConfig config;
 
-    AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
-    Transform3d robotToCam = new Transform3d(new Translation3d(-0.26, -0.23, 0.22), new Rotation3d(Degrees.of(0), Degrees.of(-30), Degrees.of(150)));
-    private Vision vision = new Vision("BR_Cam", robotToCam, aprilTagFieldLayout);
+    private AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+    private Transform3d robotToCam = new Transform3d(new Translation3d(-0.26, -0.23, 0.22), new Rotation3d(Degrees.of(0), Degrees.of(-30), Degrees.of(150)));
+    private ExtendedPhotonCamera vision = new ExtendedPhotonCamera("BR_Cam", robotToCam, aprilTagFieldLayout);
+
+    private VisionSystemSim visionSim;
+    private PhotonCameraSim cameraSim;
 
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
@@ -228,5 +235,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
+
+        // Setup PhotonVision Simulation
+        visionSim = new VisionSystemSim("main");
+        visionSim.addAprilTags(this.aprilTagFieldLayout);
+        SimCameraProperties cameraProperties = new SimCameraProperties();
+        cameraProperties.setCalibration(1280, 800, Rotation2d.fromDegrees(50));
+        cameraProperties.setCalibError(0.01, 0.08);
+        cameraProperties.setFPS(30);
+        cameraProperties.setAvgLatencyMs(35);
+        cameraProperties.setLatencyStdDevMs(5);
+        cameraSim = new PhotonCameraSim(vision.getCamera(), cameraProperties);
+
+        cameraSim.enableRawStream(true);
+        cameraSim.enableProcessedStream(true);
+        cameraSim.enableDrawWireframe(true);
+
+        visionSim.addCamera(cameraSim, robotToCam);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        visionSim.update(this.getState().Pose);
     }
 }
