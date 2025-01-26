@@ -26,6 +26,7 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.LedStrip;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Arm.ArmLocation;
 import frc.robot.subsystems.Intake.IntakeState;
@@ -50,6 +51,7 @@ public class RobotContainer {
     private final CommandXboxController operator = new CommandXboxController(1);
 
     // Defining subsystems
+    private final LedStrip ledStrip = new LedStrip();
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final Intake intake = new Intake();
     public final Pivot pivot = new Pivot();
