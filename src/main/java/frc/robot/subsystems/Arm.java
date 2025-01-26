@@ -7,6 +7,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arm extends SubsystemBase {
-    private TalonFX arm = new TalonFX(3, "rio");
+    private TalonFX motor = new TalonFX(3, "rio");
     private final PositionVoltage request = new PositionVoltage(0.9).withSlot(0);
 
     public enum ArmLocation{
@@ -31,8 +32,9 @@ public class Arm extends SubsystemBase {
         armSlot0Configs.kI = 0.15;
         armSlot0Configs.kD = 0.085;
 
-        arm.getConfigurator().apply(armSlot0Configs);
-        arm.setPosition(0);
+        motor.getConfigurator().apply(armSlot0Configs);
+        motor.setPosition(0);
+        motor.setNeutralMode(NeutralModeValue.Brake);
 
         locationsMap.put(ArmLocation.INTAKE, degreeToEncoder(-32));
         locationsMap.put(ArmLocation.OUTTAKE, degreeToEncoder(25));
@@ -42,16 +44,16 @@ public class Arm extends SubsystemBase {
 
     public Command set(DoubleSupplier volt){
         return this.runOnce(() -> {
-            arm.setVoltage(volt.getAsDouble()*1 + getFeedForward());
+            motor.setVoltage(volt.getAsDouble()*1 + getFeedForward());
             state = ArmLocation.UNDEFINED;
         });
     }
 
     public Command set(ArmLocation location){
         return this.run(() -> {
-            arm.setControl(request.withPosition(locationsMap.get(location)).withFeedForward(getFeedForward()));
+            motor.setControl(request.withPosition(locationsMap.get(location)).withFeedForward(getFeedForward()));
             state = location;
-        }).until(() -> MathUtil.isNear(locationsMap.get(location), arm.getPosition().getValueAsDouble(), 0.05));
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.05));
     }
 
     public double getFeedForward() {
@@ -59,7 +61,7 @@ public class Arm extends SubsystemBase {
     }
 
     private double getAbsoluteDegrees() {
-        return arm.getPosition().getValueAsDouble() * 11.09 - 32;
+        return motor.getPosition().getValueAsDouble() * 11.09 - 32;
     }
 
     private double degreeToEncoder(double degree) {
@@ -72,16 +74,16 @@ public class Arm extends SubsystemBase {
 
     public Command eStop() {
         return this.runOnce(() -> {
-            arm.setVoltage(0);
+            motor.setVoltage(0);
             state = ArmLocation.UNDEFINED;
         });
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Arm/arm/Encoder", arm.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Arm/arm/Encoder", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Arm/arm/absoluteDegree", getAbsoluteDegrees());
-        SmartDashboard.putNumber("Arm/arm/volt", arm.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Arm/arm/volt", motor.getMotorVoltage().getValueAsDouble());
     }
 }
 

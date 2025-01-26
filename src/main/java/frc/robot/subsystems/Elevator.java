@@ -9,6 +9,7 @@ import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,8 +39,10 @@ public class Elevator extends SubsystemBase {
         left.getConfigurator().apply(new SoftwareLimitSwitchConfigs()
                                             .withForwardSoftLimitThreshold(33.9).withForwardSoftLimitEnable(true)
                                             .withReverseSoftLimitThreshold(0.0).withReverseSoftLimitEnable(true));
+        left.setNeutralMode(NeutralModeValue.Brake);
         left.setPosition(0);
 
+        right.setNeutralMode(NeutralModeValue.Brake);
         right.setControl(new Follower(1, false));
 
         locationsMap.put(ElevatorLocation.BOTTOM, 3.0);
