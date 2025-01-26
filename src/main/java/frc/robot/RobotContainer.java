@@ -16,9 +16,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.generated.TunerConstants;
@@ -55,8 +53,9 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final Intake intake = new Intake();
     public final Pivot pivot = new Pivot();
-    public final Arm arm = new Arm();
     public final Elevator elevator = new Elevator();
+    public final Arm arm = new Arm();
+
 
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
@@ -80,10 +79,10 @@ public class RobotContainer {
             )
         );
 
-        joystick.rightTrigger().onTrue(new InstantCommand(() -> {
+        joystick.rightTrigger().onTrue(Commands.run(() -> {
             speedSupplier = () -> MaxSpeed * 0.35;
         }));
-        joystick.rightTrigger().onFalse(new InstantCommand(() -> {
+        joystick.rightTrigger().onFalse(Commands.run(() -> {
             speedSupplier = () -> MaxSpeed * .85; // default speed is 85% theoretical max speed
         }));
         
@@ -98,11 +97,11 @@ public class RobotContainer {
         joystick.x().onTrue(intake.set(IntakeState.IN).repeatedly().withTimeout(3));
         joystick.a().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(2));
 
-        joystick.b().onTrue(
-            new ConditionalCommand(new ParallelCommandGroup(
+        joystick.b().toggleOnTrue(
+            Commands.either(Commands.parallel(
                 arm.set(ArmLocation.OUTTAKE),
                 pivot.set(PivotLocation.OUTTAKE)
-            ), new ParallelCommandGroup(
+            ), Commands.parallel(
                 arm.set(ArmLocation.INTAKE),
                 pivot.set(PivotLocation.INTAKE)
             ), () -> arm.getState() == ArmLocation.INTAKE)
@@ -110,11 +109,12 @@ public class RobotContainer {
 
         joystick.y().onTrue(arm.set(ArmLocation.INTAKE));
 
-        joystick.leftBumper().or(operator.leftBumper()).onTrue(new ParallelCommandGroup(
+        joystick.leftBumper().or(operator.leftBumper()).onTrue(Commands.parallel(
             arm.eStop(),
             pivot.eStop(),
             elevator.eStop(),
-            new InstantCommand(() -> {}, drivetrain)
+            intake.eStop(),
+            Commands.runOnce(() -> {}, drivetrain)
         ));
 
         operator.y().whileTrue(elevator.set(operator::getLeftX).repeatedly());

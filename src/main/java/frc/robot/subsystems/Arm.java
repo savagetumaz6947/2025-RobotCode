@@ -45,7 +45,7 @@ public class Arm extends SubsystemBase {
     public Command set(DoubleSupplier volt){
         return this.runOnce(() -> {
             motor.setVoltage(volt.getAsDouble()*1 + getFeedForward());
-            state = ArmLocation.UNDEFINED;
+            if (volt.getAsDouble() != 0) state = ArmLocation.UNDEFINED;
         });
     }
 
@@ -81,10 +81,8 @@ public class Arm extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Arm/arm/Encoder", motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Arm/arm/absoluteDegree", getAbsoluteDegrees());
-        SmartDashboard.putNumber("Arm/arm/volt", motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Arm/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Arm/Motor/AbsoluteDegree", getAbsoluteDegrees());
+        SmartDashboard.putNumber("Arm/Motor/MotorVoltage", motor.getMotorVoltage().getValueAsDouble());
     }
 }
-
-//0.09

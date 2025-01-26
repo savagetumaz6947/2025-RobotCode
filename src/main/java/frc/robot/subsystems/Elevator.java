@@ -55,7 +55,7 @@ public class Elevator extends SubsystemBase {
     public Command set(DoubleSupplier voltage){
         return this.runOnce(() -> {
             left.setVoltage(voltage.getAsDouble() * 2 + getFeedForward());
-            state = ElevatorLocation.UNDEFINED;
+            if (voltage.getAsDouble() != 0) state = ElevatorLocation.UNDEFINED;
         });
     }
 
@@ -83,8 +83,7 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Elevator/elevator/Volt", left.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Elevator/elevator/encoder", left.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Elevator/Left/EncoderPos", left.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Elevator/Left/MotorVoltage", left.getMotorVoltage().getValueAsDouble());
     }
-
 }

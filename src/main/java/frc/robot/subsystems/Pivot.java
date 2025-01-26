@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Pivot extends SubsystemBase {
-    private TalonFX pivot = new TalonFX(4, "rio");
+    private TalonFX motor = new TalonFX(4, "rio");
     final PositionVoltage request = new PositionVoltage(3.75).withSlot(0);
 
     public enum PivotLocation {
@@ -31,22 +31,29 @@ public class Pivot extends SubsystemBase {
         pivotSlot0Configs.kI = 0.35;
         pivotSlot0Configs.kD = 0.085;
 
-        pivot.getConfigurator().apply(pivotSlot0Configs);
-        pivot.setNeutralMode(NeutralModeValue.Brake);
-        pivot.setPosition(0);
+        motor.getConfigurator().apply(pivotSlot0Configs);
+        motor.setNeutralMode(NeutralModeValue.Brake);
+        motor.setPosition(0);
 
         locationsMap.put(PivotLocation.INTAKE, 0.0);
         locationsMap.put(PivotLocation.OUTTAKE, 3.75);
 
-        this.setDefaultCommand(this.set(PivotLocation.INTAKE).repeatedly());
+        this.setDefaultCommand(this.set(() -> 0).repeatedly());
+    }
+
+    public Command set(DoubleSupplier voltage) {
+        return this.run(() -> {
+            motor.setVoltage(voltage.getAsDouble());
+            if (voltage.getAsDouble() != 0) state = PivotLocation.UNDEFINED;
+        });
     }
 
     public Command set(PivotLocation location) {
         return this.run(() -> {
-            pivot.setControl(request.withPosition(locationsMap.get(location)));
+            motor.setControl(request.withPosition(locationsMap.get(location)));
             state = location;
         }).until(() -> {
-            return MathUtil.isNear(locationsMap.get(location), pivot.getPosition().getValueAsDouble(), 0.05);
+            return MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.05);
         });
     }
 
@@ -56,13 +63,13 @@ public class Pivot extends SubsystemBase {
 
     public Command eStop() {
         return this.runOnce(() -> {
-            pivot.setVoltage(0);
+            motor.setVoltage(0);
             state = PivotLocation.UNDEFINED;
         });
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Pivot/Pivot/Encoder", pivot.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
     }
 }

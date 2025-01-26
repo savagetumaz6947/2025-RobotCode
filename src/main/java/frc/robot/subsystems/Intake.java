@@ -14,7 +14,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-    private SparkMax intake = new SparkMax(51, MotorType.kBrushless);
+    private SparkMax motor = new SparkMax(51, MotorType.kBrushless);
+    private SparkMaxSim motorSim;
+
 
     public enum IntakeState {
         IN, OUT, DEFAULT
@@ -27,7 +29,7 @@ public class Intake extends SubsystemBase {
     public Intake() {
         SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
         sparkMaxConfig.smartCurrentLimit(10, 10);
-        intake.configure(sparkMaxConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        motor.configure(sparkMaxConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         stateMap.put(IntakeState.DEFAULT, 0.5);
         stateMap.put(IntakeState.IN, 8.0);
@@ -38,14 +40,14 @@ public class Intake extends SubsystemBase {
 
     public Command set(IntakeState state) {
         return this.runOnce(() -> {
-            intake.setVoltage(stateMap.get(state));
+            motor.setVoltage(stateMap.get(state));
             this.state = state;
         });
     }
 
     public Command eStop() {
         return this.runOnce(() -> {
-            intake.setVoltage(0);
+            motor.setVoltage(0);
             this.state = IntakeState.DEFAULT;
         });
     }
@@ -56,7 +58,7 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Intake/AppliedOutput", intake.getBusVoltage() * intake.getAppliedOutput());
-        SmartDashboard.putNumber("Intake/OutputCurrent", intake.getOutputCurrent());
+        SmartDashboard.putNumber("Intake/Motor/AppliedVoltage", motor.getBusVoltage() * motor.getAppliedOutput());
+        SmartDashboard.putNumber("Intake/Motor/OutputCurrent", motor.getOutputCurrent());
     }
 }
