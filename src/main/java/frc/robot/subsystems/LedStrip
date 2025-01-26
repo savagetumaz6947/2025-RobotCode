@@ -9,9 +9,9 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LedStrip extends SubsystemBase {
-    private AddressableLED led = new AddressableLED(9);
+    private AddressableLED led = new AddressableLED(5);
     private AddressableLEDBuffer buffer = new AddressableLEDBuffer(62);
-    private int position = 5;
+    private int position = 7;
 
     private boolean shooting = false;
 
@@ -27,15 +27,6 @@ public class LedStrip extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (shooting) {
-            buffer.setLED(position % 32, Color.kGreen);
-            buffer.setLED(61 - (position % 32), Color.kGreen);
-            buffer.setLED((position - 7) % 32, Color.kBlack);
-            buffer.setLED(61 - ((position - 7) % 32), Color.kBlack);
-            position++;
-            led.setData(buffer);
-            return;
-        }
         var alliance = DriverStation.getAlliance();
         if (alliance.isEmpty()) {
             buffer.setLED(position % 32, Color.kWhite);
