@@ -50,6 +50,7 @@ public class RobotContainer {
     private final CommandXboxController operator = new CommandXboxController(1);
 
     // Defining subsystems
+    private final LedStrip ledStrip = new LedStrip();
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final Intake intake = new Intake();
     public final Pivot pivot = new Pivot();
