@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;

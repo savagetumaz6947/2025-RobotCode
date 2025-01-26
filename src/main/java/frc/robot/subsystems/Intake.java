@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
     private SparkMax motor = new SparkMax(51, MotorType.kBrushless);
-    private SparkMaxSim motorSim;
-
 
     public enum IntakeState {
         IN, OUT, DEFAULT
@@ -45,15 +43,15 @@ public class Intake extends SubsystemBase {
         });
     }
 
+    public IntakeState getState() {
+        return state;
+    }
+
     public Command eStop() {
         return this.runOnce(() -> {
             motor.setVoltage(0);
             this.state = IntakeState.DEFAULT;
         });
-    }
-
-    public IntakeState getState() {
-        return state;
     }
 
     @Override
