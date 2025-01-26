@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -12,14 +14,23 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 
 public class Elevator extends SubsystemBase {
     private TalonFX left = new TalonFX(1, "rio");
     private TalonFX right = new TalonFX(2, "rio");
     final PositionVoltage request = new PositionVoltage(1).withSlot(0);
+
+    private static ElevatorSim sim;
+    private static MechanismLigament2d mech2d;
 
     public enum ElevatorLocation {
         BOTTOM, MID, TOP, UNDEFINED
@@ -79,6 +90,29 @@ public class Elevator extends SubsystemBase {
             left.set(0);
             state = ElevatorLocation.UNDEFINED;
         });
+    }
+
+    public void configureSimulation() {
+        sim = new ElevatorSim(DCMotor.getKrakenX60(2), 10, 4.8, 0.061,
+                        0.01, 1.3, true,
+                        0.01);
+        mech2d = RobotContainer.bigMech2dRoot.append(new MechanismLigament2d("Elevator", sim.getPositionMeters(), 90));
+    }
+
+    public static MechanismLigament2d getMech2d() {
+        return mech2d;
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        left.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+        sim.setInputVoltage(left.getSimState().getMotorVoltage());
+        sim.update(0.02);
+
+        mech2d.setLength(sim.getPositionMeters());
+
+        left.getSimState().setRawRotorPosition(Units.radiansToRotations(sim.getPositionMeters() / 0.061 * 10));
+        left.getSimState().setRotorVelocity(RadiansPerSecond.of(sim.getVelocityMetersPerSecond() / 0.061 * 10));
     }
 
     @Override

@@ -13,6 +13,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -56,6 +58,12 @@ public class RobotContainer {
     public final Elevator elevator = new Elevator();
     public final Arm arm = new Arm();
 
+    // BIG holds elevator and arm
+    public static Mechanism2d bigMech2d;
+    public static MechanismRoot2d bigMech2dRoot;
+    // SMALL holds pivot and intake
+    public static Mechanism2d smallMech2d;
+    public static MechanismRoot2d smallMech2dRoot;
 
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
@@ -64,6 +72,22 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         configureBindings();
+
+        if (Robot.isSimulation()) {
+            bigMech2d = new Mechanism2d(2, 2);
+            bigMech2dRoot = bigMech2d.getRoot("Structure Root", 1, 0.2);
+
+            smallMech2d = new Mechanism2d(2, 2);
+            smallMech2dRoot = smallMech2d.getRoot("Structure Root", 1, 0.2);
+
+            SmartDashboard.putData("Sim/BigMechanism", bigMech2d);
+            SmartDashboard.putData("Sim/SmallMechanism", smallMech2d);
+
+            elevator.configureSimulation();
+            arm.configureSimulation();
+            pivot.configureSimulation();
+            intake.configureSimulation();
+        }
     }
     private DoubleSupplier speedSupplier = () -> MaxSpeed;
 
