@@ -26,6 +26,7 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LedStrip;
 import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.algaeIntake;
 import frc.robot.subsystems.Arm.ArmLocation;
 import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.Pivot.PivotLocation;
@@ -55,6 +56,7 @@ public class RobotContainer {
     public final Pivot pivot = new Pivot();
     public final Elevator elevator = new Elevator();
     public final Arm arm = new Arm();
+    public final algaeIntake algaeIntake = new algaeIntake();
 
 
     public RobotContainer() {
@@ -114,6 +116,7 @@ public class RobotContainer {
             pivot.eStop(),
             elevator.eStop(),
             intake.eStop(),
+            algaeIntake.eStop(),
             Commands.runOnce(() -> {}, drivetrain)
         ));
 
