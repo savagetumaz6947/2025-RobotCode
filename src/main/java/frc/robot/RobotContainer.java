@@ -85,7 +85,7 @@ public class RobotContainer {
             speedSupplier = () -> MaxSpeed * 0.35;
         }));
         joystick.rightTrigger().onFalse(Commands.run(() -> {
-            speedSupplier = () -> MaxSpeed * .85; // default speed is 85% theoretical max speed
+            speedSupplier = () -> MaxSpeed * .5; // default speed is 85% theoretical max speed
         }));
         
         joystick.leftTrigger().whileTrue(drivetrain.applyRequest(() -> brake));
