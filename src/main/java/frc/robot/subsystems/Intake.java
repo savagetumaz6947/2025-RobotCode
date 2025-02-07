@@ -31,7 +31,7 @@ public class Intake extends SubsystemBase {
 
         stateMap.put(IntakeState.DEFAULT, 0.5);
         stateMap.put(IntakeState.IN, 8.0);
-        stateMap.put(IntakeState.OUT, -2.0);
+        stateMap.put(IntakeState.OUT, -8.0);
         
         this.setDefaultCommand(this.set(IntakeState.DEFAULT).repeatedly());
     }

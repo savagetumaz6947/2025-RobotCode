@@ -14,7 +14,7 @@ public class LedStrip extends SubsystemBase {
     private AddressableLEDBuffer buffer = new AddressableLEDBuffer(180);
     private final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
     private static final Distance ledSpacing = Meters.of(1 / 60.0);
-    private final LEDPattern scrollingRainbow = rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(1), ledSpacing);
+    private final LEDPattern scrollingRainbow = rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(0.5), ledSpacing);
 
     public LedStrip () {
         led.setLength(buffer.getLength());

@@ -28,9 +28,9 @@ public class Arm extends SubsystemBase {
 
     public Arm () {
         Slot0Configs armSlot0Configs = new Slot0Configs();
-        armSlot0Configs.kP = 0.6;
-        armSlot0Configs.kI = 0.15;
-        armSlot0Configs.kD = 0.085;
+        armSlot0Configs.kP = 0.35;
+        armSlot0Configs.kI = 0.5;
+        armSlot0Configs.kD = 0.09;
 
         motor.getConfigurator().apply(armSlot0Configs);
         motor.setPosition(0);
@@ -53,7 +53,7 @@ public class Arm extends SubsystemBase {
         return this.run(() -> {
             motor.setControl(request.withPosition(locationsMap.get(location)).withFeedForward(getFeedForward()));
             state = location;
-        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.05));
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.1));
     }
 
     public double getFeedForward() {

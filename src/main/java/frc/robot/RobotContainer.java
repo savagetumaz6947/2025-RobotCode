@@ -96,8 +96,8 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        joystick.x().onTrue(intake.set(IntakeState.IN).repeatedly().withTimeout(3));
-        joystick.a().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(2));
+        joystick.x().onTrue(intake.set(IntakeState.IN).repeatedly().withTimeout(1.5));
+        joystick.a().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(1));
 
         joystick.b().toggleOnTrue(
             Commands.either(Commands.parallel(
@@ -127,7 +127,7 @@ public class RobotContainer {
         operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
         operator.b().onTrue(arm.set(ArmLocation.INTAKE));
 
-        // operator.rightBumper().onTrue(elevator.set(ElevatorLocation.MID));
+        //operator.rightBumper().onTrue(elevator.set(ElevatorLocation.MID));
         // operator.leftBumper().onTrue(elevator.set(ElevatorLocation.TOP));
         // operator.rightTrigger().onTrue(elevator.set(ElevatorLocation.BOTTOM));
         
