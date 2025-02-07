@@ -10,43 +10,43 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class algaeIntake extends SubsystemBase {
-    private TalonFX motor = new TalonFX(1, "rio");
+    private TalonFX motor = new TalonFX(6, "rio");
 
-    public enum IntakeState{
+    public enum algaeIntakeState{
         DEFAULT, IN, OUT
     }
 
-    private Map<IntakeState, Double> stateMap = new HashMap<>();
-    private IntakeState state = IntakeState.DEFAULT;
+    private Map<algaeIntakeState, Double> stateMap = new HashMap<>();
+    private algaeIntakeState state = algaeIntakeState.DEFAULT;
 
     public algaeIntake (){
-        stateMap.put(IntakeState.DEFAULT, 0.0);
-        stateMap.put(IntakeState.IN, 0.0);
-        stateMap.put(IntakeState.IN, 0.0);
+        stateMap.put(algaeIntakeState.DEFAULT, 0.0);
+        stateMap.put(algaeIntakeState.IN, 12.0);
+        stateMap.put(algaeIntakeState.OUT, -3.0);
 
-        this.setDefaultCommand(this.set(IntakeState.DEFAULT).repeatedly());
+        this.setDefaultCommand(this.set(algaeIntakeState.DEFAULT).repeatedly());
     }
 
-    public Command set(IntakeState state){
+    public Command set(algaeIntakeState state){
         return this.runOnce(() -> {
             motor.setVoltage(stateMap.get(state));
             this.state = state;
         });
     }
 
-    public IntakeState getState() {
+    public algaeIntakeState getState() {
         return state;
     }
 
     public Command eStop() {
         return this.runOnce(() -> {
             motor.setVoltage(0);
-            state = IntakeState.DEFAULT;
+            state = algaeIntakeState.DEFAULT;
         });
     }
 
     @Override
     public void periodic(){
-        SmartDashboard.putNumber("Arm/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("algaeIntake/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
     }
 }

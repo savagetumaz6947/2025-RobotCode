@@ -15,16 +15,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class algaePivot extends SubsystemBase {
-    private TalonFX motor = new TalonFX(4, "rio");
+    private TalonFX motor = new TalonFX(5, "rio");
     final PositionVoltage request = new PositionVoltage(3.75).withSlot(0);
 
-    public enum PivotLocation {
+    public enum algaePivotLocation {
         INTAKE, OUTTAKE, UNDEFINED
     }
 
-    private Map<PivotLocation, Double> locationsMap = new HashMap<>();
+    private Map<algaePivotLocation, Double> locationsMap = new HashMap<>();
 
-    private PivotLocation state = PivotLocation.INTAKE;
+    private algaePivotLocation state = algaePivotLocation.INTAKE;
 
     public algaePivot () {
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
@@ -33,11 +33,11 @@ public class algaePivot extends SubsystemBase {
         pivotSlot0Configs.kD = 0.085;
 
         motor.getConfigurator().apply(pivotSlot0Configs);
-        motor.setNeutralMode(NeutralModeValue.Brake);
+        motor.setNeutralMode(NeutralModeValue.Coast);
         motor.setPosition(0);
 
-        locationsMap.put(PivotLocation.INTAKE, 0.0);
-        locationsMap.put(PivotLocation.OUTTAKE, 3.75);
+        locationsMap.put(algaePivotLocation.INTAKE, 0.0);
+        locationsMap.put(algaePivotLocation.OUTTAKE, 3.0);
 
         this.setDefaultCommand(this.set(() -> 0).repeatedly());
     }
@@ -45,11 +45,11 @@ public class algaePivot extends SubsystemBase {
     public Command set(DoubleSupplier voltage) {
         return this.run(() -> {
             motor.setVoltage(voltage.getAsDouble());
-            if (voltage.getAsDouble() != 0) state = PivotLocation.UNDEFINED;
+            if (voltage.getAsDouble() != 0) state = algaePivotLocation.UNDEFINED;
         });
     }
 
-    public Command set(PivotLocation location) {
+    public Command set(algaePivotLocation location) {
         return this.run(() -> {
             motor.setControl(request.withPosition(locationsMap.get(location)));
             state = location;
@@ -58,19 +58,19 @@ public class algaePivot extends SubsystemBase {
         });
     }
 
-    public PivotLocation getState() {
+    public algaePivotLocation getState() {
         return state;
     }
 
     public Command eStop() {
         return this.runOnce(() -> {
             motor.setVoltage(0);
-            state = PivotLocation.UNDEFINED;
+            state = algaePivotLocation.UNDEFINED;
         });
     }
 
     @Override
-    public void periodic() {
-        SmartDashboard.putNumber("Pivot/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
+    public void periodic(){
+        SmartDashboard.putNumber("algaePivot/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
     }
 }

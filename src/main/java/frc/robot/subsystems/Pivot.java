@@ -54,7 +54,7 @@ public class Pivot extends SubsystemBase {
             motor.setControl(request.withPosition(locationsMap.get(location)));
             state = location;
         }).until(() -> {
-            return MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.05);
+            return MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.5);
         });
     }
 

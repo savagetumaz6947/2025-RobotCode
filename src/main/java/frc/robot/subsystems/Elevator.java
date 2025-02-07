@@ -22,7 +22,7 @@ public class Elevator extends SubsystemBase {
     final PositionVoltage request = new PositionVoltage(1).withSlot(0);
 
     public enum ElevatorLocation {
-        BOTTOM, MID, TOP, UNDEFINED
+        BOTTOM, MID, TOP, UNDEFINED,toptomid
     }
 
     private Map<ElevatorLocation, Double> locationsMap = new HashMap<>();
@@ -31,9 +31,9 @@ public class Elevator extends SubsystemBase {
 
     public Elevator() {
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
-        elevatorSlot0Configs.kP = 0.5;
-        elevatorSlot0Configs.kI = 0.025;
-        elevatorSlot0Configs.kD = 0.2;
+        elevatorSlot0Configs.kP = 0.9;
+        elevatorSlot0Configs.kI = 0.05;
+        elevatorSlot0Configs.kD = 0.35;
         
         left.getConfigurator().apply(elevatorSlot0Configs);
         left.getConfigurator().apply(new SoftwareLimitSwitchConfigs()
@@ -45,16 +45,17 @@ public class Elevator extends SubsystemBase {
         right.setNeutralMode(NeutralModeValue.Brake);
         right.setControl(new Follower(1, false));
 
-        locationsMap.put(ElevatorLocation.BOTTOM, 3.0);
-        locationsMap.put(ElevatorLocation.MID, 14.2);
-        locationsMap.put(ElevatorLocation.TOP, 33.9);
+        locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
+        locationsMap.put(ElevatorLocation.MID, 14.5);
+        locationsMap.put(ElevatorLocation.toptomid, 24.0);
+        locationsMap.put(ElevatorLocation.TOP, 35.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
     }
 
     public Command set(DoubleSupplier voltage){
         return this.runOnce(() -> {
-            left.setVoltage(voltage.getAsDouble() * 2 + getFeedForward());
+            left.setVoltage(voltage.getAsDouble() * 1 + getFeedForward());
             if (voltage.getAsDouble() != 0) state = ElevatorLocation.UNDEFINED;
         });
     }
@@ -63,7 +64,7 @@ public class Elevator extends SubsystemBase {
         return this.run(() ->{
             left.setControl(request.withPosition(locationsMap.get(position)).withFeedForward(getFeedForward()));
             state = position;
-        }).until(() -> MathUtil.isNear(locationsMap.get(position), left.getPosition().getValueAsDouble(), 0.05));
+        }).until(() -> MathUtil.isNear(locationsMap.get(position), left.getPosition().getValueAsDouble(), 1.5));
     }
 
     public double getFeedForward() {

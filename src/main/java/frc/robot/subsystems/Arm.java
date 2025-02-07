@@ -19,7 +19,7 @@ public class Arm extends SubsystemBase {
     private final PositionVoltage request = new PositionVoltage(0.9).withSlot(0);
 
     public enum ArmLocation{
-        INTAKE, OUTTAKE, UNDEFINED
+        INTAKE, OUTTAKE, OUT, UNDEFINED, DEFAULT
     }
 
     private Map<ArmLocation, Double> locationsMap = new HashMap<>();
@@ -28,45 +28,47 @@ public class Arm extends SubsystemBase {
 
     public Arm () {
         Slot0Configs armSlot0Configs = new Slot0Configs();
-        armSlot0Configs.kP = 0.35;
-        armSlot0Configs.kI = 0.5;
-        armSlot0Configs.kD = 0.09;
+        armSlot0Configs.kP = 0.55;
+        armSlot0Configs.kI = 0.3;
+        armSlot0Configs.kD = 0.15;
 
         motor.getConfigurator().apply(armSlot0Configs);
         motor.setPosition(0);
         motor.setNeutralMode(NeutralModeValue.Brake);
 
-        locationsMap.put(ArmLocation.INTAKE, degreeToEncoder(-32));
-        locationsMap.put(ArmLocation.OUTTAKE, degreeToEncoder(25));
+        locationsMap.put(ArmLocation.INTAKE, -13.0);
+        locationsMap.put(ArmLocation.OUTTAKE, 24.0);
+        locationsMap.put(ArmLocation.OUT, 10.0);
+        locationsMap.put(ArmLocation.DEFAULT, 0.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
     }
 
     public Command set(DoubleSupplier volt){
         return this.runOnce(() -> {
-            motor.setVoltage(volt.getAsDouble()*1 + getFeedForward());
+            motor.setVoltage(volt.getAsDouble()*1);
             if (volt.getAsDouble() != 0) state = ArmLocation.UNDEFINED;
         });
     }
 
     public Command set(ArmLocation location){
         return this.run(() -> {
-            motor.setControl(request.withPosition(locationsMap.get(location)).withFeedForward(getFeedForward()));
+            motor.setControl(request.withPosition(locationsMap.get(location)));
             state = location;
-        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.1));
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.3));
     }
 
-    public double getFeedForward() {
+    /*public double getFeedForward() {
         return Math.cos(Math.toRadians(90 - getAbsoluteDegrees())) * -0.42;
-    }
+    }*/
 
     private double getAbsoluteDegrees() {
         return motor.getPosition().getValueAsDouble() * 11.09 - 32;
     }
 
-    private double degreeToEncoder(double degree) {
+    /*private double degreeToEncoder(double degree) {
         return (degree + 32)/11.09;
-    }
+    }*/
 
     public ArmLocation getState() {
         return state;
