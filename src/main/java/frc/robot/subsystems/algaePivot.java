@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class algaePivot extends SubsystemBase {
     private TalonFX motor = new TalonFX(5, "rio");
-    final PositionVoltage request = new PositionVoltage(3.75).withSlot(0);
+    final PositionVoltage request = new PositionVoltage(1).withSlot(0);
 
     public enum algaePivotLocation {
         INTAKE, OUTTAKE, UNDEFINED
@@ -28,16 +28,15 @@ public class algaePivot extends SubsystemBase {
 
     public algaePivot () {
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
-        pivotSlot0Configs.kP = 1.05;
+        pivotSlot0Configs.kP = 0.4;
         pivotSlot0Configs.kI = 0.35;
         pivotSlot0Configs.kD = 0.085;
-
         motor.getConfigurator().apply(pivotSlot0Configs);
         motor.setNeutralMode(NeutralModeValue.Coast);
         motor.setPosition(0);
 
         locationsMap.put(algaePivotLocation.INTAKE, 0.0);
-        locationsMap.put(algaePivotLocation.OUTTAKE, 3.0);
+        locationsMap.put(algaePivotLocation.OUTTAKE, -17.0);
 
         this.setDefaultCommand(this.set(() -> 0).repeatedly());
     }
@@ -54,7 +53,8 @@ public class algaePivot extends SubsystemBase {
             motor.setControl(request.withPosition(locationsMap.get(location)));
             state = location;
         }).until(() -> {
-            return MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.05);
+            return MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.25);
+
         });
     }
 

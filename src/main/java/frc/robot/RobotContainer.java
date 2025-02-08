@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
@@ -35,6 +36,7 @@ import frc.robot.subsystems.algaeIntake;
 import frc.robot.subsystems.algaePivot;
 import frc.robot.subsystems.Pivot.PivotLocation;
 import frc.robot.subsystems.algaeIntake.algaeIntakeState;
+import frc.robot.subsystems.algaePivot.algaePivotLocation;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -116,19 +118,21 @@ public class RobotContainer {
             arm.set(ArmLocation.OUT)
         ));
 
-        joystick.a().onTrue(new SequentialCommandGroup(
-            elevator.set(ElevatorLocation.BOTTOM),
-            arm.set(ArmLocation.OUT),
-            pivot.set(PivotLocation.OUTTAKE),
-            arm.set(ArmLocation.OUTTAKE),
-            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
-            arm.set(ArmLocation.OUT)
-        ));
+joystick.a().onTrue(new SequentialCommandGroup(
+    elevator.set(ElevatorLocation.BOTTOM),
+    new ParallelDeadlineGroup(
+        pivot.set(PivotLocation.OUTTAKE),  // 這個指令作為 "Deadline"，決定何時結束
+        arm.set(ArmLocation.OUT)          // 這個指令會同時執行，但不影響結束條件
+    ),
+    arm.set(ArmLocation.OUTTAKE),
+    intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+    arm.set(ArmLocation.OUT)
+));
+
 
         joystick.y().onTrue(new SequentialCommandGroup(
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.DEFAULT),
-            elevator.set(ElevatorLocation.toptomid),
             elevator.set(ElevatorLocation.BOTTOM)
         ));            
 
@@ -152,12 +156,13 @@ public class RobotContainer {
         //operator.a().whileTrue(arm.set(operator::getLeftX).repeatedly());
 
         // arm.setDefaultCommand(arm.set(() -> operator.getLeftX()));
-        operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
-        operator.b().onTrue(arm.set(ArmLocation.INTAKE));
-        operator.a().onTrue(elevator.set(ElevatorLocation.MID));
-        operator.y().onTrue(algaeIntake.set(algaeIntakeState.OUT).repeatedly().withTimeout(0.5));
-        operator.rightBumper().onTrue(algaeIntake.set(algaeIntakeState.IN).repeatedly().withTimeout(0.5));
-
+        // operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
+        // operator.b().onTrue(arm.set(ArmLocation.INTAKE));
+        //operator.a().onTrue(elevator.set(ElevatorLocation.MID));
+        operator.x().onTrue(algaeIntake.set(algaeIntakeState.OUT).repeatedly().withTimeout(0.6));
+        operator.b().onTrue(algaeIntake.set(algaeIntakeState.IN).repeatedly().withTimeout(0.6));
+        operator.y().onTrue(algaePivot.set(algaePivotLocation.INTAKE));
+        operator.a().onTrue(algaePivot.set(algaePivotLocation.OUTTAKE));
         // operator.rightBumper().onTrue(elevator.set(ElevatorLocation.MID));
         // operator.leftBumper().onTrue(elevator.set(ElevatorLocation.TOP));
         // operator.rightTrigger().onTrue(elevator.set(ElevatorLocation.BOTTOM));

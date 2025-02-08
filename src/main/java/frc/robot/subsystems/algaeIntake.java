@@ -21,8 +21,8 @@ public class algaeIntake extends SubsystemBase {
 
     public algaeIntake (){
         stateMap.put(algaeIntakeState.DEFAULT, 0.0);
-        stateMap.put(algaeIntakeState.IN, 12.0);
-        stateMap.put(algaeIntakeState.OUT, -3.0);
+        stateMap.put(algaeIntakeState.IN, -6.0);
+        stateMap.put(algaeIntakeState.OUT, 12.0);
 
         this.setDefaultCommand(this.set(algaeIntakeState.DEFAULT).repeatedly());
     }
