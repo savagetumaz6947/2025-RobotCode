@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -88,10 +89,10 @@ public class RobotContainer {
         );
 
         joystick.rightTrigger().onTrue(new InstantCommand(() -> {
-            speedSupplier = () -> MaxSpeed * 0.2;
+            speedSupplier = () -> MaxSpeed * 0.35;
         }));
         joystick.rightTrigger().onFalse(new InstantCommand(() -> {
-            speedSupplier = () -> MaxSpeed * 0.35; // default speed is 85% theoretical max speed
+            speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
         }));
         
         joystick.leftTrigger().whileTrue(drivetrain.applyRequest(() -> brake));
@@ -103,6 +104,7 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         joystick.x().onTrue(new SequentialCommandGroup(
+            elevator.set(ElevatorLocation.BOTTOM),
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.INTAKE),
             intake.set(IntakeState.IN).repeatedly().withTimeout(3)
@@ -110,26 +112,28 @@ public class RobotContainer {
         );
             
         joystick.b().onTrue(new SequentialCommandGroup(
-            elevator.set(ElevatorLocation.MID),
+            elevator.set(ElevatorLocation.MID) ,
             arm.set(ArmLocation.OUT),
             pivot.set(PivotLocation.OUTTAKE),
             arm.set(ArmLocation.OUTTAKE),
             intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
-            arm.set(ArmLocation.OUT)
+            arm.set(ArmLocation.OUT),
+            elevator.set(ElevatorLocation.BOTTOM),
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.INTAKE)
         ));
+        joystick.povUp().onTrue(new SequentialCommandGroup(
+            elevator.set(ElevatorLocation.TOP) ,
+            arm.set(ArmLocation.OUT),
+            pivot.set(PivotLocation.OUTTAKE),
+            arm.set(ArmLocation.OUTTAKE),
+            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+            arm.set(ArmLocation.OUT),
+            elevator.set(ElevatorLocation.BOTTOM),
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.INTAKE)
 
-joystick.a().onTrue(new SequentialCommandGroup(
-    elevator.set(ElevatorLocation.BOTTOM),
-    new ParallelDeadlineGroup(
-        pivot.set(PivotLocation.OUTTAKE),  // 這個指令作為 "Deadline"，決定何時結束
-        arm.set(ArmLocation.OUT)          // 這個指令會同時執行，但不影響結束條件
-    ),
-    arm.set(ArmLocation.OUTTAKE),
-    intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
-    arm.set(ArmLocation.OUT)
-));
-
-
+        ));
         joystick.y().onTrue(new SequentialCommandGroup(
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.DEFAULT),
@@ -148,7 +152,9 @@ joystick.a().onTrue(new SequentialCommandGroup(
             pivot.set(PivotLocation.OUTTAKE),
             arm.set(ArmLocation.OUTTAKE),
             intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
-            arm.set(ArmLocation.OUT)
+            arm.set(ArmLocation.OUT),
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.INTAKE)
         ));
 
 

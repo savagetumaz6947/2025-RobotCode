@@ -27,25 +27,26 @@ public class Arm extends SubsystemBase {
     private ArmLocation state = ArmLocation.INTAKE;
 
     public Arm() {
-        // 設定 PID 參數
+        
         Slot0Configs armSlot0Configs = new Slot0Configs();
-        armSlot0Configs.kP = 0.75;
-        armSlot0Configs.kI = 0.15;
-        armSlot0Configs.kD = 0.15;
+        armSlot0Configs.kP = 0.5;
+        armSlot0Configs.kI = 0;
+        armSlot0Configs.kD = 0.2;
         armSlot0Configs.kV = 0.25;
         armSlot0Configs.kA = 0.1;
 
-        // 設定 Motion Magic 參數
+        
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 35; // 減少加速度，讓動作更柔和
-        motionMagicConfigs.MotionMagicCruiseVelocity = 40; // 降低最大巡航速度，避免最後剎車不及
+        motionMagicConfigs.MotionMagicAcceleration = 25; 
+        motionMagicConfigs.MotionMagicCruiseVelocity = 100; 
+        motionMagicConfigs.MotionMagicJerk = 200;
 
-        // 套用設定到馬達
+        
         motor.getConfigurator().apply(armSlot0Configs);
         motor.getConfigurator().apply(motionMagicConfigs);
 
         motor.setPosition(0);
-        motor.setNeutralMode(NeutralModeValue.Brake); // 減少剎停震盪
+        motor.setNeutralMode(NeutralModeValue.Brake);
 
         locationsMap.put(ArmLocation.INTAKE, -13.0);
         locationsMap.put(ArmLocation.OUTTAKE, 24.0);
@@ -66,7 +67,7 @@ public class Arm extends SubsystemBase {
         return this.run(() -> {
             motor.setControl(motionMagicRequest.withPosition(locationsMap.get(location)));
             state = location;
-        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 1));
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.5));
     }
 
     public ArmLocation getState() {

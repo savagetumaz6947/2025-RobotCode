@@ -25,7 +25,7 @@ public class Elevator extends SubsystemBase {
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 
     public enum ElevatorLocation {
-        BOTTOM, MID, TOP, UNDEFINED, toptomid
+        BOTTOM, MID, TOP, UNDEFINED
     }
 
     private Map<ElevatorLocation, Double> locationsMap = new HashMap<>();
@@ -35,21 +35,21 @@ public class Elevator extends SubsystemBase {
     public Elevator() {
 
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 12; 
-        motionMagicConfigs.MotionMagicCruiseVelocity = 30; 
-
-
+        motionMagicConfigs.MotionMagicAcceleration = 100; 
+        motionMagicConfigs.MotionMagicCruiseVelocity = 120;
+        motionMagicConfigs.MotionMagicJerk = 950;
+       
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
-        elevatorSlot0Configs.kP = 0.9;
-        elevatorSlot0Configs.kI = 0.05;
-        elevatorSlot0Configs.kD = 0.35;
-        elevatorSlot0Configs.kV = 0.12; 
+        elevatorSlot0Configs.kP = 0.08;
+        elevatorSlot0Configs.kI = 0.25;
+        elevatorSlot0Configs.kD = 0.3;
+        elevatorSlot0Configs.kV = 0.1; 
         elevatorSlot0Configs.kA = 0.01; 
         
         left.getConfigurator().apply(elevatorSlot0Configs);
         left.getConfigurator().apply(motionMagicConfigs);
         left.getConfigurator().apply(new SoftwareLimitSwitchConfigs()
-                                            .withForwardSoftLimitThreshold(33.9).withForwardSoftLimitEnable(true)
+                                            .withForwardSoftLimitThreshold(35.0).withForwardSoftLimitEnable(true)
                                             .withReverseSoftLimitThreshold(0.0).withReverseSoftLimitEnable(true));
 
         left.setNeutralMode(NeutralModeValue.Coast);
@@ -77,11 +77,11 @@ public class Elevator extends SubsystemBase {
             double targetPosition = locationsMap.get(position);
             left.setControl(motionMagicRequest.withPosition(targetPosition).withFeedForward(getFeedForward()));
             state = position;
-        }).until(() -> MathUtil.isNear(locationsMap.get(position), left.getPosition().getValueAsDouble(), 1.5));
+        }).until(() -> MathUtil.isNear(locationsMap.get(position), left.getPosition().getValueAsDouble(), 3));
     }
 
     public double getFeedForward() {
-        return 0;
+        return 0.35;
     }
 
     public ElevatorLocation getState() {
