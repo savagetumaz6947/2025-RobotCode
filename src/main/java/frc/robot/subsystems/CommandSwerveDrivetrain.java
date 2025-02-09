@@ -257,5 +257,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public void simulationPeriodic() {
         visionSim.update(this.getState().Pose);
+        updateSimState(0.02, RobotController.getBatteryVoltage());
     }
 }

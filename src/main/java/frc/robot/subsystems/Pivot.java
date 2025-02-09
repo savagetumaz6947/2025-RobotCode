@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RPM;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -11,13 +13,27 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 
 public class Pivot extends SubsystemBase {
     private TalonFX motor = new TalonFX(4, "rio");
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(3.75).withSlot(0);
+
+    private static FlywheelSim sim;
+    public static MechanismLigament2d mech2d;
 
     public enum PivotLocation {
         INTAKE, OUTTAKE, UNDEFINED
@@ -74,6 +90,23 @@ public class Pivot extends SubsystemBase {
             motor.setVoltage(0);
             state = PivotLocation.UNDEFINED;
         });
+    }
+
+    public void configureSimulation() {
+        sim = new FlywheelSim(LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60(1), 0.05, 15), DCMotor.getKrakenX60(1));
+        mech2d = RobotContainer.smallMech2dRoot.append(new MechanismLigament2d("Pivot", 0.5, 0, 10, new Color8Bit(Color.kAqua)));
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        motor.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+        sim.setInputVoltage(motor.getSimState().getMotorVoltage());
+        sim.update(0.02);
+
+        motor.getSimState().addRotorPosition(Units.radiansToRotations(sim.getAngularVelocityRadPerSec()) * TimedRobot.kDefaultPeriod * 15);
+        motor.getSimState().setRotorVelocity(RPM.of(sim.getAngularVelocityRPM()));
+
+        mech2d.setAngle(Rotation2d.fromRotations(motor.getPosition().getValueAsDouble() / 15));
     }
 
     @Override
