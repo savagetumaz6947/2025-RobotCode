@@ -6,8 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -29,7 +30,7 @@ import frc.robot.RobotContainer;
 
 public class Pivot extends SubsystemBase {
     private TalonFX motor = new TalonFX(4, "rio");
-    final PositionVoltage request = new PositionVoltage(3.75).withSlot(0);
+    final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(3.75).withSlot(0);
 
     private static FlywheelSim sim;
     public static MechanismLigament2d mech2d;
@@ -39,21 +40,28 @@ public class Pivot extends SubsystemBase {
     }
 
     private Map<PivotLocation, Double> locationsMap = new HashMap<>();
-
     private PivotLocation state = PivotLocation.INTAKE;
 
-    public Pivot () {
+    public Pivot() {
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
-        pivotSlot0Configs.kP = 1.05;
-        pivotSlot0Configs.kI = 0.35;
-        pivotSlot0Configs.kD = 0.085;
+        pivotSlot0Configs.kP = 1;
+        pivotSlot0Configs.kI = 0;
+        pivotSlot0Configs.kD = 0.1;
+        pivotSlot0Configs.kV = 0.1;
+        pivotSlot0Configs.kA = 0.02;
+
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+        motionMagicConfigs.MotionMagicAcceleration = 400;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 800;
+        motionMagicConfigs.MotionMagicJerk = 800; 
 
         motor.getConfigurator().apply(pivotSlot0Configs);
+        motor.getConfigurator().apply(motionMagicConfigs);
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setPosition(0);
 
         locationsMap.put(PivotLocation.INTAKE, 0.0);
-        locationsMap.put(PivotLocation.OUTTAKE, 3.75);
+        locationsMap.put(PivotLocation.OUTTAKE, 11.25);
 
         this.setDefaultCommand(this.set(() -> 0).repeatedly());
     }
@@ -67,11 +75,10 @@ public class Pivot extends SubsystemBase {
 
     public Command set(PivotLocation location) {
         return this.run(() -> {
-            motor.setControl(request.withPosition(locationsMap.get(location)));
+            double targetPosition = locationsMap.get(location);
+            motor.setControl(motionMagicRequest.withPosition(targetPosition));
             state = location;
-        }).until(() -> {
-            return MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.05);
-        });
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.5));
     }
 
     public PivotLocation getState() {

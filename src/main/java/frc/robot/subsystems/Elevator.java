@@ -6,10 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -27,7 +28,9 @@ import frc.robot.RobotContainer;
 public class Elevator extends SubsystemBase {
     private TalonFX left = new TalonFX(1, "rio");
     private TalonFX right = new TalonFX(2, "rio");
-    final PositionVoltage request = new PositionVoltage(1).withSlot(0);
+
+    // Motion Magic 控制模式
+    final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 
     private static ElevatorSim sim;
     private static MechanismLigament2d mech2d;
@@ -41,44 +44,55 @@ public class Elevator extends SubsystemBase {
     private ElevatorLocation state = ElevatorLocation.BOTTOM;
 
     public Elevator() {
+
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+        motionMagicConfigs.MotionMagicAcceleration = 100; 
+        motionMagicConfigs.MotionMagicCruiseVelocity = 120;
+        motionMagicConfigs.MotionMagicJerk = 950;
+       
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
-        elevatorSlot0Configs.kP = 0.5;
-        elevatorSlot0Configs.kI = 0.025;
-        elevatorSlot0Configs.kD = 0.2;
+        elevatorSlot0Configs.kP = 0.08;
+        elevatorSlot0Configs.kI = 0.25;
+        elevatorSlot0Configs.kD = 0.3;
+        elevatorSlot0Configs.kV = 0.1; 
+        elevatorSlot0Configs.kA = 0.01; 
         
         left.getConfigurator().apply(elevatorSlot0Configs);
+        left.getConfigurator().apply(motionMagicConfigs);
         left.getConfigurator().apply(new SoftwareLimitSwitchConfigs()
-                                            .withForwardSoftLimitThreshold(33.9).withForwardSoftLimitEnable(true)
+                                            .withForwardSoftLimitThreshold(35.0).withForwardSoftLimitEnable(true)
                                             .withReverseSoftLimitThreshold(0.0).withReverseSoftLimitEnable(true));
-        left.setNeutralMode(NeutralModeValue.Brake);
+
+        left.setNeutralMode(NeutralModeValue.Coast);
         left.setPosition(0);
 
-        right.setNeutralMode(NeutralModeValue.Brake);
+        right.setNeutralMode(NeutralModeValue.Coast);
         right.setControl(new Follower(1, false));
 
-        locationsMap.put(ElevatorLocation.BOTTOM, 3.0);
-        locationsMap.put(ElevatorLocation.MID, 14.2);
-        locationsMap.put(ElevatorLocation.TOP, 33.9);
+        locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
+        locationsMap.put(ElevatorLocation.MID, 14.5);
+        locationsMap.put(ElevatorLocation.TOP, 35.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
     }
 
     public Command set(DoubleSupplier voltage){
         return this.runOnce(() -> {
-            left.setVoltage(voltage.getAsDouble() * 2 + getFeedForward());
+            left.setVoltage(voltage.getAsDouble() * 1 + getFeedForward());
             if (voltage.getAsDouble() != 0) state = ElevatorLocation.UNDEFINED;
         });
     }
 
     public Command set(ElevatorLocation position){
         return this.run(() ->{
-            left.setControl(request.withPosition(locationsMap.get(position)).withFeedForward(getFeedForward()));
+            double targetPosition = locationsMap.get(position);
+            left.setControl(motionMagicRequest.withPosition(targetPosition).withFeedForward(getFeedForward()));
             state = position;
-        }).until(() -> MathUtil.isNear(locationsMap.get(position), left.getPosition().getValueAsDouble(), 0.05));
+        }).until(() -> MathUtil.isNear(locationsMap.get(position), left.getPosition().getValueAsDouble(), 3));
     }
 
     public double getFeedForward() {
-        return 0.24;
+        return 0.35;
     }
 
     public ElevatorLocation getState() {

@@ -4,7 +4,10 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.function.DoubleSupplier;
 
@@ -18,23 +21,29 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.ArmLocation;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Elevator.ElevatorLocation;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.LedStrip;
-import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.Arm.ArmLocation;
 import frc.robot.subsystems.Intake.IntakeState;
+import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.algaeIntake;
+import frc.robot.subsystems.algaePivot;
 import frc.robot.subsystems.Pivot.PivotLocation;
+import frc.robot.subsystems.algaeIntake.algaeIntakeState;
+import frc.robot.subsystems.algaePivot.algaePivotLocation;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private double MaxAngularRate = RotationsPerSecond.of(0.2).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -51,13 +60,14 @@ public class RobotContainer {
     private final CommandXboxController operator = new CommandXboxController(1);
 
     // Defining subsystems
-    private final LedStrip ledStrip = new LedStrip();
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final Intake intake = new Intake();
     public final Pivot pivot = new Pivot();
-    public final Elevator elevator = new Elevator();
     public final Arm arm = new Arm();
-
+    public final Elevator elevator = new Elevator();
+    public final algaeIntake algaeIntake = new algaeIntake();
+    public final algaePivot algaePivot = new algaePivot();
+  
     // BIG holds elevator and arm
     public static Mechanism2d bigMech2d;
     public static MechanismRoot2d bigMech2dRoot;
@@ -103,11 +113,11 @@ public class RobotContainer {
             )
         );
 
-        joystick.rightTrigger().onTrue(Commands.run(() -> {
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> {
             speedSupplier = () -> MaxSpeed * 0.35;
         }));
-        joystick.rightTrigger().onFalse(Commands.run(() -> {
-            speedSupplier = () -> MaxSpeed * .85; // default speed is 85% theoretical max speed
+        joystick.rightTrigger().onFalse(new InstantCommand(() -> {
+            speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
         }));
         
         joystick.leftTrigger().whileTrue(drivetrain.applyRequest(() -> brake));
@@ -118,41 +128,76 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        joystick.x().onTrue(intake.set(IntakeState.IN).repeatedly().withTimeout(3));
-        joystick.a().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(2));
-
-        joystick.b().toggleOnTrue(
-            Commands.either(Commands.parallel(
-                arm.set(ArmLocation.OUTTAKE),
-                pivot.set(PivotLocation.OUTTAKE)
-            ), Commands.parallel(
-                arm.set(ArmLocation.INTAKE),
-                pivot.set(PivotLocation.INTAKE)
-            ), () -> arm.getState() == ArmLocation.INTAKE)
+        joystick.x().onTrue(new SequentialCommandGroup(
+            elevator.set(ElevatorLocation.BOTTOM),
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.INTAKE),
+            intake.set(IntakeState.IN).repeatedly().withTimeout(3)
+            )
         );
+            
+        joystick.b().onTrue(new SequentialCommandGroup(
+            elevator.set(ElevatorLocation.MID) ,
+            arm.set(ArmLocation.OUT),
+            pivot.set(PivotLocation.OUTTAKE),
+            arm.set(ArmLocation.OUTTAKE),
+            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+            arm.set(ArmLocation.OUT),
+            elevator.set(ElevatorLocation.BOTTOM),
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.INTAKE)
+        ));
+        joystick.povUp().onTrue(new SequentialCommandGroup(
+            elevator.set(ElevatorLocation.TOP) ,
+            arm.set(ArmLocation.OUT),
+            pivot.set(PivotLocation.OUTTAKE),
+            arm.set(ArmLocation.OUTTAKE),
+            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+            arm.set(ArmLocation.OUT),
+            elevator.set(ElevatorLocation.BOTTOM),
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.INTAKE)
 
-        joystick.y().onTrue(arm.set(ArmLocation.INTAKE));
+        ));
+        joystick.y().onTrue(new SequentialCommandGroup(
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.DEFAULT),
+            elevator.set(ElevatorLocation.BOTTOM)
+        ));            
 
-        joystick.leftBumper().or(operator.leftBumper()).onTrue(Commands.parallel(
+        joystick.leftBumper().or(operator.leftBumper()).onTrue(new ParallelCommandGroup(
             arm.eStop(),
             pivot.eStop(),
             elevator.eStop(),
-            intake.eStop(),
-            Commands.runOnce(() -> {}, drivetrain)
+            new InstantCommand(() -> {}, drivetrain)
+        ));
+            joystick.a().onTrue(new SequentialCommandGroup(
+            elevator.set(ElevatorLocation.BOTTOM),
+            arm.set(ArmLocation.OUT),
+            pivot.set(PivotLocation.OUTTAKE),
+            arm.set(ArmLocation.OUTTAKE),
+            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+            arm.set(ArmLocation.OUT),
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.INTAKE)
         ));
 
-        operator.y().whileTrue(elevator.set(operator::getLeftX).repeatedly());
-        operator.a().whileTrue(arm.set(operator::getLeftX).repeatedly());
+
+        //operator.y().whileTrue(elevator.set(operator::getLeftX).repeatedly());
+        //operator.a().whileTrue(arm.set(operator::getLeftX).repeatedly());
 
         // arm.setDefaultCommand(arm.set(() -> operator.getLeftX()));
-        operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
-        operator.b().onTrue(arm.set(ArmLocation.INTAKE));
-
+        // operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
+        // operator.b().onTrue(arm.set(ArmLocation.INTAKE));
+        //operator.a().onTrue(elevator.set(ElevatorLocation.MID));
+        operator.x().onTrue(algaeIntake.set(algaeIntakeState.OUT).repeatedly().withTimeout(0.6));
+        operator.b().onTrue(algaeIntake.set(algaeIntakeState.IN).repeatedly().withTimeout(0.6));
+        operator.y().onTrue(algaePivot.set(algaePivotLocation.INTAKE));
+        operator.a().onTrue(algaePivot.set(algaePivotLocation.OUTTAKE));
         // operator.rightBumper().onTrue(elevator.set(ElevatorLocation.MID));
         // operator.leftBumper().onTrue(elevator.set(ElevatorLocation.TOP));
         // operator.rightTrigger().onTrue(elevator.set(ElevatorLocation.BOTTOM));
         
-
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
