@@ -4,27 +4,27 @@
 
 package frc.robot;
 
-
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
@@ -60,20 +60,31 @@ public class RobotContainer {
     private final CommandXboxController operator = new CommandXboxController(1);
 
     // Defining subsystems
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    public final Intake intake = new Intake();
-    public final Pivot pivot = new Pivot();
-    public final Arm arm = new Arm();
-    public final Elevator elevator = new Elevator();
-    public final algaeIntake algaeIntake = new algaeIntake();
-    public final algaePivot algaePivot = new algaePivot();
-  
-    // BIG holds elevator and arm
-    public static Mechanism2d bigMech2d;
-    public static MechanismRoot2d bigMech2dRoot;
-    // SMALL holds pivot and intake
-    public static Mechanism2d smallMech2d;
-    public static MechanismRoot2d smallMech2dRoot;
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final Intake intake = new Intake();
+    private final Pivot pivot = new Pivot();
+    private final Arm arm = new Arm();
+    private final Elevator elevator = new Elevator();
+    private final algaeIntake algaeIntake = new algaeIntake();
+    private final algaePivot algaePivot = new algaePivot();
+
+    private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
+        return new SequentialCommandGroup(
+            new ParallelCommandGroup( 
+                elevator.set(location),
+                arm.set(ArmLocation.OUTTAKE),
+                pivot.set(PivotLocation.OUTTAKE)
+            ),
+                new WaitCommand(0.2),
+                intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+                arm.set(ArmLocation.OUT),
+            new ParallelCommandGroup(
+                pivot.set(PivotLocation.INTAKE),
+                arm.set(ArmLocation.INTAKE),
+                elevator.set(ElevatorLocation.BOTTOM)
+            )
+        );
+    };
 
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
@@ -82,24 +93,8 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         configureBindings();
-
-        if (Robot.isSimulation()) {
-            bigMech2d = new Mechanism2d(2, 2);
-            bigMech2dRoot = bigMech2d.getRoot("Structure Root", 1, 0.2);
-
-            smallMech2d = new Mechanism2d(2, 2);
-            smallMech2dRoot = smallMech2d.getRoot("Structure Root", 1, 0.2);
-
-            SmartDashboard.putData("Sim/BigMechanism", bigMech2d);
-            SmartDashboard.putData("Sim/SmallMechanism", smallMech2d);
-
-            elevator.configureSimulation();
-            arm.configureSimulation();
-            pivot.configureSimulation();
-            intake.configureSimulation();
-        }
     }
-    private DoubleSupplier speedSupplier = () -> MaxSpeed;
+    private DoubleSupplier speedSupplier = () -> MaxSpeed * 0.2;
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
@@ -128,6 +123,23 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
+        joystick.povDown().onTrue(new SequentialCommandGroup(
+            new ParallelCommandGroup( 
+                elevator.set(ElevatorLocation.BOTTOM),
+                arm.set(ArmLocation.GROUND),
+                pivot.set(PivotLocation.OUTTAKE)
+            ),
+                pivot.set(PivotLocation.INTAKE),
+                pivot.set(PivotLocation.OUTTAKE),
+                new WaitCommand(0.2),
+                intake.set(IntakeState.IN).repeatedly().withTimeout(1),
+                arm.set(ArmLocation.OUTTAKE),
+            new ParallelCommandGroup(
+                arm.set(ArmLocation.DEFAULT),
+                elevator.set(ElevatorLocation.BOTTOM)
+            )
+        ));
+
         joystick.x().onTrue(new SequentialCommandGroup(
             elevator.set(ElevatorLocation.BOTTOM),
             pivot.set(PivotLocation.INTAKE),
@@ -136,29 +148,8 @@ public class RobotContainer {
             )
         );
             
-        joystick.b().onTrue(new SequentialCommandGroup(
-            elevator.set(ElevatorLocation.MID) ,
-            arm.set(ArmLocation.OUT),
-            pivot.set(PivotLocation.OUTTAKE),
-            arm.set(ArmLocation.OUTTAKE),
-            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
-            arm.set(ArmLocation.OUT),
-            elevator.set(ElevatorLocation.BOTTOM),
-            pivot.set(PivotLocation.INTAKE),
-            arm.set(ArmLocation.INTAKE)
-        ));
-        joystick.povUp().onTrue(new SequentialCommandGroup(
-            elevator.set(ElevatorLocation.TOP) ,
-            arm.set(ArmLocation.OUT),
-            pivot.set(PivotLocation.OUTTAKE),
-            arm.set(ArmLocation.OUTTAKE),
-            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
-            arm.set(ArmLocation.OUT),
-            elevator.set(ElevatorLocation.BOTTOM),
-            pivot.set(PivotLocation.INTAKE),
-            arm.set(ArmLocation.INTAKE)
-
-        ));
+        joystick.b().onTrue(putCoralToLevel.apply(ElevatorLocation.MID));
+        joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
         joystick.y().onTrue(new SequentialCommandGroup(
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.DEFAULT),
@@ -171,17 +162,10 @@ public class RobotContainer {
             elevator.eStop(),
             new InstantCommand(() -> {}, drivetrain)
         ));
-            joystick.a().onTrue(new SequentialCommandGroup(
-            elevator.set(ElevatorLocation.BOTTOM),
-            arm.set(ArmLocation.OUT),
-            pivot.set(PivotLocation.OUTTAKE),
-            arm.set(ArmLocation.OUTTAKE),
-            intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
-            arm.set(ArmLocation.OUT),
-            pivot.set(PivotLocation.INTAKE),
-            arm.set(ArmLocation.INTAKE)
-        ));
-
+//-------------------------------------------------------------------------------------------------------------------  
+        
+        joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
+//-------------------------------------------------------------------------------------------------------------------
 
         //operator.y().whileTrue(elevator.set(operator::getLeftX).repeatedly());
         //operator.a().whileTrue(arm.set(operator::getLeftX).repeatedly());
@@ -205,3 +189,4 @@ public class RobotContainer {
         return autoChooser.getSelected();
     }
 }
+

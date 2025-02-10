@@ -17,7 +17,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -85,9 +84,4 @@ public class Intake extends SubsystemBase {
         mech2d.setAngle(Rotation2d.fromRotations(motor.getEncoder().getPosition() / 15));
     }
 
-    @Override
-    public void periodic() {
-        SmartDashboard.putNumber("Intake/Motor/AppliedVoltage", motor.getBusVoltage() * motor.getAppliedOutput());
-        SmartDashboard.putNumber("Intake/Motor/OutputCurrent", motor.getOutputCurrent());
-    }
 }

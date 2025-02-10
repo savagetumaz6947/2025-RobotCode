@@ -24,7 +24,7 @@ public class TunerConstants {
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains = new Slot0Configs()
-        .withKP(100).withKI(0).withKD(0.5)
+        .withKP(30).withKI(0).withKD(1)
         .withKS(0.1).withKV(2.66).withKA(0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
@@ -47,7 +47,7 @@ public class TunerConstants {
 
     // The remote sensor feedback type to use for the steer motors;
     // When not Pro-licensed, FusedCANcoder/SyncCANcoder automatically fall back to RemoteCANcoder
-    private static final SteerFeedbackType kSteerFeedbackType = SteerFeedbackType.FusedCANcoder;
+    private static final SteerFeedbackType kSteerFeedbackType = SteerFeedbackType.RemoteCANcoder;
 
     // The stator current at which the wheels start to slip;
     // This needs to be tuned to your individual robot

@@ -14,19 +14,14 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
 
 public class Pivot extends SubsystemBase {
     private TalonFX motor = new TalonFX(4, "rio");
@@ -44,11 +39,11 @@ public class Pivot extends SubsystemBase {
 
     public Pivot() {
         Slot0Configs pivotSlot0Configs = new Slot0Configs();
-        pivotSlot0Configs.kP = 1;
-        pivotSlot0Configs.kI = 0;
-        pivotSlot0Configs.kD = 0.1;
-        pivotSlot0Configs.kV = 0.1;
-        pivotSlot0Configs.kA = 0.02;
+        pivotSlot0Configs.kP = 0.6;
+        pivotSlot0Configs.kI = 0.1;
+        pivotSlot0Configs.kD = 0.2;
+        pivotSlot0Configs.kV = 0.15;
+        pivotSlot0Configs.kA = 0.025;
 
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
         motionMagicConfigs.MotionMagicAcceleration = 400;
@@ -60,8 +55,8 @@ public class Pivot extends SubsystemBase {
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setPosition(0);
 
-        locationsMap.put(PivotLocation.INTAKE, 0.0);
-        locationsMap.put(PivotLocation.OUTTAKE, 11.25);
+        locationsMap.put(PivotLocation.INTAKE, -0.2);
+        locationsMap.put(PivotLocation.OUTTAKE, 12.0);
 
         this.setDefaultCommand(this.set(() -> 0).repeatedly());
     }
@@ -78,7 +73,7 @@ public class Pivot extends SubsystemBase {
             double targetPosition = locationsMap.get(location);
             motor.setControl(motionMagicRequest.withPosition(targetPosition));
             state = location;
-        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.5));
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 1));
     }
 
     public PivotLocation getState() {
@@ -91,12 +86,6 @@ public class Pivot extends SubsystemBase {
             state = PivotLocation.UNDEFINED;
         });
     }
-
-    public void configureSimulation() {
-        sim = new FlywheelSim(LinearSystemId.createFlywheelSystem(DCMotor.getKrakenX60(1), 0.05, 15), DCMotor.getKrakenX60(1));
-        mech2d = RobotContainer.smallMech2dRoot.append(new MechanismLigament2d("Pivot", 0.5, 0, 10, new Color8Bit(Color.kAqua)));
-    }
-
     @Override
     public void simulationPeriodic() {
         motor.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
