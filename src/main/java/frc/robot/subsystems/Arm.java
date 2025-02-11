@@ -20,7 +20,7 @@ public class Arm extends SubsystemBase {
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0.9).withSlot(0);
 
     public enum ArmLocation {
-        INTAKE, OUTTAKE, OUT, UNDEFINED, DEFAULT, GROUND,
+        INTAKE, OUTTAKE, OUT, UNDEFINED, DEFAULT, GROUND, ALGAE
     }
 
     private Map<ArmLocation, Double> locationsMap = new HashMap<>();
@@ -53,6 +53,7 @@ public class Arm extends SubsystemBase {
         locationsMap.put(ArmLocation.OUT, 10.0);
         locationsMap.put(ArmLocation.DEFAULT, 0.0);
         locationsMap.put(ArmLocation.GROUND, 63.5);
+        locationsMap.put(ArmLocation.ALGAE, 70.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
     }

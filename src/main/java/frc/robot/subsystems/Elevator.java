@@ -24,7 +24,7 @@ public class Elevator extends SubsystemBase {
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 
     public enum ElevatorLocation {
-        BOTTOM, MID, TOP, UNDEFINED
+        BOTTOM, MID, TOP, UNDEFINED, ALGAE
     }
 
     private Map<ElevatorLocation, Double> locationsMap = new HashMap<>();
@@ -58,6 +58,7 @@ public class Elevator extends SubsystemBase {
         locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
         locationsMap.put(ElevatorLocation.MID, 14.5);
         locationsMap.put(ElevatorLocation.TOP, 34.0);
+        locationsMap.put(ElevatorLocation.ALGAE, 20.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
     }

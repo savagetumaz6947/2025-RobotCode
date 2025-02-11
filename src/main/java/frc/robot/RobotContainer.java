@@ -168,20 +168,17 @@ public class RobotContainer {
         joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
 //-------------------------------------------------------------------------------------------------------------------
 
-        //operator.y().whileTrue(elevator.set(operator::getLeftX).repeatedly());
-        //operator.a().whileTrue(arm.set(operator::getLeftX).repeatedly());
-
-        // arm.setDefaultCommand(arm.set(() -> operator.getLeftX()));
-        // operator.x().onTrue(arm.set(ArmLocation.OUTTAKE));
-        // operator.b().onTrue(arm.set(ArmLocation.INTAKE));
-        //operator.a().onTrue(elevator.set(ElevatorLocation.MID));
         operator.x().onTrue(algaeIntake.set(algaeIntakeState.OUT).repeatedly().withTimeout(0.6));
         operator.b().onTrue(algaeIntake.set(algaeIntakeState.IN).repeatedly().withTimeout(0.6));
         operator.y().onTrue(algaePivot.set(algaePivotLocation.INTAKE));
         operator.a().onTrue(algaePivot.set(algaePivotLocation.OUTTAKE));
-        // operator.rightBumper().onTrue(elevator.set(ElevatorLocation.MID));
-        // operator.leftBumper().onTrue(elevator.set(ElevatorLocation.TOP));
-        // operator.rightTrigger().onTrue(elevator.set(ElevatorLocation.BOTTOM));
+
+        operator.rightBumper().onTrue(new SequentialCommandGroup(
+            elevator.set(ElevatorLocation.ALGAE),
+            arm.set(ArmLocation.ALGAE),
+            intake.set(IntakeState.OUT)
+        ));
+
         
         drivetrain.registerTelemetry(logger::telemeterize);
     }

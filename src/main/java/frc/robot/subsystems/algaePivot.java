@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 //------------------------------------------------------------------------------------------------------------------------
-    public class algaePivot extends SubsystemBase {
+public class algaePivot extends SubsystemBase {
     private TalonFX motor = new TalonFX(5, "rio");
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 //------------------------------------------------------------------------------------------------------------------------
