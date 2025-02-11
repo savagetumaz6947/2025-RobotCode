@@ -129,11 +129,12 @@ public class RobotContainer {
                 arm.set(ArmLocation.GROUND),
                 pivot.set(PivotLocation.OUTTAKE)
             ),
+                intake.set(IntakeState.IN).repeatedly().withTimeout(1.5),
                 pivot.set(PivotLocation.INTAKE),
-                pivot.set(PivotLocation.OUTTAKE),
-                new WaitCommand(0.2),
-                intake.set(IntakeState.IN).repeatedly().withTimeout(1),
-                arm.set(ArmLocation.OUTTAKE),
+                new ParallelCommandGroup(
+                    pivot.set(PivotLocation.OUTTAKE),
+                    arm.set(ArmLocation.OUTTAKE)
+                ),
             new ParallelCommandGroup(
                 arm.set(ArmLocation.DEFAULT),
                 elevator.set(ElevatorLocation.BOTTOM)

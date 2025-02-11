@@ -21,8 +21,7 @@ public class Elevator extends SubsystemBase {
     private TalonFX left = new TalonFX(1, "rio");
     private TalonFX right = new TalonFX(2, "rio");
 
-    final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(
-        1).withSlot(0);
+    final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 
     public enum ElevatorLocation {
         BOTTOM, MID, TOP, UNDEFINED
@@ -35,10 +34,10 @@ public class Elevator extends SubsystemBase {
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
         motionMagicConfigs.MotionMagicAcceleration = 70;
         motionMagicConfigs.MotionMagicCruiseVelocity = 100;
-        motionMagicConfigs.MotionMagicJerk = 950;
+        motionMagicConfigs.MotionMagicJerk = 500;
        
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
-        elevatorSlot0Configs.kP = 0.3;
+        elevatorSlot0Configs.kP = 0.8;
         elevatorSlot0Configs.kI = 0.15;
         elevatorSlot0Configs.kD = 0.25;
         elevatorSlot0Configs.kV = 0.1; 
