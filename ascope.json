@@ -1,0 +1,245 @@
+{
+  "hubs": [
+    {
+      "x": 684,
+      "y": 358,
+      "width": 1120,
+      "height": 660,
+      "state": {
+        "sidebar": {
+          "width": 297,
+          "expanded": [
+            "/Pose",
+            "/PathPlanner",
+            "/DriveState",
+            "/SmartDashboard",
+            "/SmartDashboard/Elevator",
+            "/SmartDashboard/Elevator/elevator",
+            "/SmartDashboard/Elevator/elevator/Mechanism/Elevator Root",
+            "/SmartDashboard/Elevator/elevator/Mechanism/Elevator Root/Elevator",
+            "/SmartDashboard/Sim",
+            "/SmartDashboard/Arm",
+            "/SmartDashboard/Arm/arm",
+            "/SmartDashboard/Arm/sim",
+            "/SmartDashboard/Arm/motor",
+            "/SmartDashboard/Pivot",
+            "/SmartDashboard/Pivot/Pivot",
+            "/RealOutputs",
+            "/RealOutputs/Sim",
+            "/RealOutputs/RobotContainer"
+          ]
+        },
+        "tabs": {
+          "selected": 0,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "l0u46hqusupdfmk6nbng4hguh4laccgt",
+              "renderer": "#/",
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Pivot/Pivot/Encoder",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "3kdjegfpy6nuzjpcsatiehnhua08ri9l",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SmartDashboard/Arm/motor/volt",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "cjt4e2z5j16bt87x3wap207mydafm3bi",
+              "renderer": null,
+              "controlsHeight": 195
+            },
+            {
+              "type": 2,
+              "title": "Odometry",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/DriveState/Pose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {}
+                  }
+                ],
+                "game": "2025 Field",
+                "bumpers": "auto",
+                "origin": "blue",
+                "orientation": 0,
+                "size": 30
+              },
+              "controllerUUID": "gdxqotmvloo1mud5tlbkuazzwwn11pr9",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 10,
+              "title": "Pivot & Intake",
+              "controller": [
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard/Sim/SmallMechanism",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                }
+              ],
+              "controllerUUID": "kv8sa9keuj33we6dwub50hfdousgp4y8",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 10,
+              "title": "Elevator & Arm",
+              "controller": [
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard/Sim/BigMechanism",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                }
+              ],
+              "controllerUUID": "tv385jb5xyuief9dm9zgkmkuna4r8gqx",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/DriveState/Pose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "KitBot"
+                    }
+                  }
+                ],
+                "game": "2024 Field",
+                "origin": "blue"
+              },
+              "controllerUUID": "wyt3yu59ayj3od9go8zw0bfxxszvx2mg",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  0.6329459443318673,
+                  8.098148643855529,
+                  -8.77395011669784
+                ],
+                "cameraTarget": [
+                  0.1285482548954087,
+                  2.346649633625321,
+                  -2.536896622110369
+                ]
+              },
+              "controlsHeight": 200
+            },
+            {
+              "type": 9,
+              "title": "Swerve",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "states",
+                    "logKey": "NT:/DriveState/ModuleStates",
+                    "logType": "SwerveModuleState[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff0000",
+                      "arrangement": "0,1,2,3"
+                    }
+                  },
+                  {
+                    "type": "states",
+                    "logKey": "NT:/DriveState/ModuleTargets",
+                    "logType": "SwerveModuleState[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff",
+                      "arrangement": "0,1,2,3"
+                    }
+                  }
+                ],
+                "maxSpeed": 5,
+                "sizeX": 0.65,
+                "sizeY": 0.65,
+                "orientation": 1
+              },
+              "controllerUUID": "7tdq18agysl4j24mt69o9licik8s29ed",
+              "renderer": null,
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "4.1.0"
+}

@@ -8,39 +8,39 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class climber extends SubsystemBase {
+public class Climber extends SubsystemBase {
     private TalonFX motor = new TalonFX(6, "rio");
 
-    public enum climberState {
+    public enum ClimberState {
         IN, OUT
     }
 
-    private Map<climberState, Double> stateMap = new HashMap<>();
-    private climberState state = climberState.IN;
+    private Map<ClimberState, Double> stateMap = new HashMap<>();
+    private ClimberState state = ClimberState.IN;
 
-    public climber(){
+    public Climber(){
 
-        stateMap.put(climberState.IN, 0.0);
-        stateMap.put(climberState.OUT, 1.0);
+        stateMap.put(ClimberState.IN, 0.0);
+        stateMap.put(ClimberState.OUT, 1.0);
 
-        this.setDefaultCommand(this.set(climberState.IN).repeatedly());
+        this.setDefaultCommand(this.set(ClimberState.IN).repeatedly());
     }
 
-    public Command set(climberState state){
+    public Command set(ClimberState state){
         return this.runOnce(() -> {
             motor.setVoltage(stateMap.get(state));
             this.state = state;
         });
     }
 
-    public climberState getState() {
+    public ClimberState getState() {
         return state;
     }
 
     public Command eStop() {
         return this.runOnce(() -> {
             motor.set(0);
-            state = climberState.IN;
+            state = ClimberState.IN;
         });
     }
 

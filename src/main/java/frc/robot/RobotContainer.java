@@ -10,17 +10,17 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -35,11 +35,11 @@ import frc.robot.subsystems.Elevator.ElevatorLocation;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.algaeIntake;
-import frc.robot.subsystems.algaePivot;
+import frc.robot.subsystems.AlgaeIntake.AlgaeIntakeState;
+import frc.robot.subsystems.AlgaePivot.AlgaePivotLocation;
+import frc.robot.subsystems.AlgaeIntake;
+import frc.robot.subsystems.AlgaePivot;
 import frc.robot.subsystems.Pivot.PivotLocation;
-import frc.robot.subsystems.algaeIntake.algaeIntakeState;
-import frc.robot.subsystems.algaePivot.algaePivotLocation;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -59,14 +59,22 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
 
+    // Defining simulation constants
+    // BIG holds elevator and arm
+    public static Mechanism2d bigMech2d = new Mechanism2d(2, 2);
+    public static MechanismRoot2d bigMech2dRoot = bigMech2d.getRoot("Structure Root", 1, 0.2);
+    // SMALL holds pivot and intake
+    public static Mechanism2d smallMech2d = new Mechanism2d(2, 2);
+    public static MechanismRoot2d smallMech2dRoot = smallMech2d.getRoot("Structure Root", 1, 0.2);
+
     // Defining subsystems
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private final Intake intake = new Intake();
-    private final Pivot pivot = new Pivot();
-    private final Arm arm = new Arm();
     private final Elevator elevator = new Elevator();
-    private final algaeIntake algaeIntake = new algaeIntake();
-    private final algaePivot algaePivot = new algaePivot();
+    private final Arm arm = new Arm();
+    private final Pivot pivot = new Pivot();
+    private final Intake intake = new Intake();
+    private final AlgaeIntake algaeIntake = new AlgaeIntake();
+    private final AlgaePivot algaePivot = new AlgaePivot();
 
     private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
         return new SequentialCommandGroup(
@@ -93,6 +101,11 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         configureBindings();
+
+        if (Robot.isSimulation()) {
+            SmartDashboard.putData("Sim/BigMechanism", bigMech2d);
+            SmartDashboard.putData("Sim/SmallMechanism", smallMech2d);
+        }
     }
     private DoubleSupplier speedSupplier = () -> MaxSpeed * 0.2;
 
@@ -168,10 +181,10 @@ public class RobotContainer {
         joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
 //-------------------------------------------------------------------------------------------------------------------
 
-        operator.x().onTrue(algaeIntake.set(algaeIntakeState.OUT).repeatedly().withTimeout(0.6));
-        operator.b().onTrue(algaeIntake.set(algaeIntakeState.IN).repeatedly().withTimeout(0.6));
-        operator.y().onTrue(algaePivot.set(algaePivotLocation.INTAKE));
-        operator.a().onTrue(algaePivot.set(algaePivotLocation.OUTTAKE));
+        operator.x().onTrue(algaeIntake.set(AlgaeIntakeState.OUT).repeatedly().withTimeout(0.6));
+        operator.b().onTrue(algaeIntake.set(AlgaeIntakeState.IN).repeatedly().withTimeout(0.6));
+        operator.y().onTrue(algaePivot.set(AlgaePivotLocation.INTAKE));
+        operator.a().onTrue(algaePivot.set(AlgaePivotLocation.OUTTAKE));
 
         operator.rightBumper().onTrue(new SequentialCommandGroup(
             elevator.set(ElevatorLocation.ALGAE),

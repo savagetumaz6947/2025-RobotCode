@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -13,9 +15,16 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import frc.robot.RobotContainer;
 
 public class Elevator extends SubsystemBase {
     private TalonFX left = new TalonFX(1, "rio");
@@ -29,6 +38,9 @@ public class Elevator extends SubsystemBase {
 
     private Map<ElevatorLocation, Double> locationsMap = new HashMap<>();
     private ElevatorLocation state = ElevatorLocation.BOTTOM;
+
+    private static ElevatorSim sim;
+    public static MechanismLigament2d mech2d;
 
     public Elevator() {
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
@@ -61,20 +73,22 @@ public class Elevator extends SubsystemBase {
         locationsMap.put(ElevatorLocation.ALGAE, 20.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
+
+        if (Robot.isSimulation()) configureSimulation();
     }
 
     public Command set(DoubleSupplier voltage){
+        if (voltage.getAsDouble() != 0) state = ElevatorLocation.UNDEFINED;
         return this.runOnce(() -> {
             left.setVoltage(voltage.getAsDouble() * 1 + getFeedForward());
-            if (voltage.getAsDouble() != 0) state = ElevatorLocation.UNDEFINED;
         });
     }
 
     public Command set(ElevatorLocation position){
+        state = position;
         return this.run(() ->{
             double targetPosition = locationsMap.get(position);
             left.setControl(motionMagicRequest.withPosition(targetPosition).withFeedForward(getFeedForward()));
-            state = position;
         }).until(() -> MathUtil.isNear(locationsMap.get(position), left.getPosition().getValueAsDouble(), 3));
     }
 
@@ -92,10 +106,29 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command eStop() {
+        state = ElevatorLocation.UNDEFINED;
         return this.runOnce(() -> {
             left.set(0);
-            state = ElevatorLocation.UNDEFINED;
         });
+    }
+
+    private void configureSimulation() {
+        sim = new ElevatorSim(DCMotor.getKrakenX60(2), 10, 8, 0.061,
+                0.01, 1.3, true,
+                0.01);
+        mech2d = RobotContainer.bigMech2dRoot.append(new MechanismLigament2d("Elevator", sim.getPositionMeters(), 90));
+    }
+    
+    @Override
+    public void simulationPeriodic() {
+        left.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+        sim.setInputVoltage(left.getSimState().getMotorVoltage());
+        sim.update(0.02);
+
+        mech2d.setLength(sim.getPositionMeters());
+
+        left.getSimState().setRawRotorPosition(Units.radiansToRotations(sim.getPositionMeters() / 0.061 * 10));
+        left.getSimState().setRotorVelocity(RadiansPerSecond.of(sim.getVelocityMetersPerSecond() / 0.061 * 10));
     }
 
     @Override

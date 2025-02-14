@@ -21,13 +21,11 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 
 public class Intake extends SubsystemBase {
     private SparkMax motor = new SparkMax(51, MotorType.kBrushless);
     private SparkMaxSim motorSim;
-
-    private static FlywheelSim sim;
-    private static MechanismLigament2d mech2d;
 
     public enum IntakeState {
         IN, OUT, DEFAULT
@@ -36,6 +34,9 @@ public class Intake extends SubsystemBase {
     private Map<IntakeState, Double> stateMap = new HashMap<>();
 
     private IntakeState state = IntakeState.DEFAULT;
+
+    private static FlywheelSim sim;
+    private static MechanismLigament2d mech2d;
 
     public Intake() {
         SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
@@ -47,12 +48,14 @@ public class Intake extends SubsystemBase {
         stateMap.put(IntakeState.OUT, -2.0);
         
         this.setDefaultCommand(this.set(IntakeState.DEFAULT).repeatedly());
+
+        if (Robot.isSimulation()) configureSimulation();
     }
 
     public Command set(IntakeState state) {
+        this.state = state;
         return this.runOnce(() -> {
             motor.setVoltage(stateMap.get(state));
-            this.state = state;
         });
     }
 
@@ -61,13 +64,13 @@ public class Intake extends SubsystemBase {
     }
 
     public Command eStop() {
+        this.state = IntakeState.DEFAULT;
         return this.runOnce(() -> {
             motor.setVoltage(0);
-            this.state = IntakeState.DEFAULT;
         });
     }
 
-    public void configureSimulation() {
+    private void configureSimulation() {
         motorSim = new SparkMaxSim(motor, DCMotor.getNeo550(1));
 
         sim = new FlywheelSim(LinearSystemId.createFlywheelSystem(DCMotor.getNeo550(1), 0.01, 15), DCMotor.getNeo550(1));
@@ -84,4 +87,8 @@ public class Intake extends SubsystemBase {
         mech2d.setAngle(Rotation2d.fromRotations(motor.getEncoder().getPosition() / 15));
     }
 
+    @Override
+    public void periodic() {
+        
+    }
 }

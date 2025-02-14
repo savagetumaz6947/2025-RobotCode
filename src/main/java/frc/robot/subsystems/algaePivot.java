@@ -15,19 +15,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 //------------------------------------------------------------------------------------------------------------------------
-public class algaePivot extends SubsystemBase {
+public class AlgaePivot extends SubsystemBase {
     private TalonFX motor = new TalonFX(5, "rio");
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 //------------------------------------------------------------------------------------------------------------------------
-    public enum algaePivotLocation {
+    public enum AlgaePivotLocation {
         INTAKE, OUTTAKE, UNDEFINED
     }
 
-    private Map<algaePivotLocation, Double> locationsMap = new HashMap<>();
+    private Map<AlgaePivotLocation, Double> locationsMap = new HashMap<>();
 
-    private algaePivotLocation state = algaePivotLocation.INTAKE;
+    private AlgaePivotLocation state = AlgaePivotLocation.INTAKE;
 
-    public algaePivot() {
+    public AlgaePivot() {
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
         motionMagicConfigs.MotionMagicAcceleration = 30;
         motionMagicConfigs.MotionMagicCruiseVelocity = 70;
@@ -44,20 +44,20 @@ public class algaePivot extends SubsystemBase {
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setPosition(0);
 
-        locationsMap.put(algaePivotLocation.INTAKE, 0.0);
-        locationsMap.put(algaePivotLocation.OUTTAKE, -7.0);
+        locationsMap.put(AlgaePivotLocation.INTAKE, 0.0);
+        locationsMap.put(AlgaePivotLocation.OUTTAKE, -7.0);
 
         this.setDefaultCommand(this.set(() -> 0).repeatedly());
     }
 //------------------------------------------------------------------------------------------------------------------------
     public Command set(DoubleSupplier voltage) {
+        if (voltage.getAsDouble() != 0) state = AlgaePivotLocation.UNDEFINED;
         return this.run(() -> {
             motor.setVoltage(voltage.getAsDouble());
-            if (voltage.getAsDouble() != 0) state = algaePivotLocation.UNDEFINED;
         });
     }
 //------------------------------------------------------------------------------------------------------------------------
-    public Command set(algaePivotLocation location) {
+    public Command set(AlgaePivotLocation location) {
         return this.run(() -> {
             motor.setControl(motionMagicRequest.withPosition(locationsMap.get(location)).withFeedForward(getFeedForward()));
             state = location;
@@ -77,20 +77,20 @@ public class algaePivot extends SubsystemBase {
         }
     }
 //------------------------------------------------------------------------------------------------------------------------
-    public algaePivotLocation getState() {
+    public AlgaePivotLocation getState() {
         return state;
     }
 
     public Command eStop() {
         return this.runOnce(() -> {
             motor.set(0);
-            state = algaePivotLocation.UNDEFINED;
+            state = AlgaePivotLocation.UNDEFINED;
         });
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("algaePivot/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("algaePivot/Motor/FeedForward", getFeedForward());
+        SmartDashboard.putNumber("AlgaePivot/Motor/EncoderPos", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("AlgaePivot/Motor/FeedForward", getFeedForward());
     }
 }

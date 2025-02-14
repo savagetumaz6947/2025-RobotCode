@@ -9,39 +9,39 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class algaeIntake extends SubsystemBase {
+public class AlgaeIntake extends SubsystemBase {
     private TalonFX motor = new TalonFX(6, "rio");
 
-    public enum algaeIntakeState{
+    public enum AlgaeIntakeState {
         DEFAULT, IN, OUT
     }
 
-    private Map<algaeIntakeState, Double> stateMap = new HashMap<>();
-    private algaeIntakeState state = algaeIntakeState.DEFAULT;
+    private Map<AlgaeIntakeState, Double> stateMap = new HashMap<>();
+    private AlgaeIntakeState state = AlgaeIntakeState.DEFAULT;
 
-    public algaeIntake (){
-        stateMap.put(algaeIntakeState.DEFAULT, 0.0);
-        stateMap.put(algaeIntakeState.IN, -6.0);
-        stateMap.put(algaeIntakeState.OUT, 12.0);
+    public AlgaeIntake (){
+        stateMap.put(AlgaeIntakeState.DEFAULT, 0.0);
+        stateMap.put(AlgaeIntakeState.IN, -6.0);
+        stateMap.put(AlgaeIntakeState.OUT, 12.0);
 
-        this.setDefaultCommand(this.set(algaeIntakeState.DEFAULT).repeatedly());
+        this.setDefaultCommand(this.set(AlgaeIntakeState.DEFAULT).repeatedly());
     }
 
-    public Command set(algaeIntakeState state){
+    public Command set(AlgaeIntakeState state){
         return this.runOnce(() -> {
             motor.setVoltage(stateMap.get(state));
             this.state = state;
         });
     }
 
-    public algaeIntakeState getState() {
+    public AlgaeIntakeState getState() {
         return state;
     }
 
     public Command eStop() {
         return this.runOnce(() -> {
             motor.setVoltage(0);
-            state = algaeIntakeState.DEFAULT;
+            state = AlgaeIntakeState.DEFAULT;
         });
     }
 
