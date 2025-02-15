@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -40,6 +41,7 @@ import frc.robot.subsystems.AlgaePivot.AlgaePivotLocation;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.AlgaePivot;
 import frc.robot.subsystems.Pivot.PivotLocation;
+import frc.robot.utils.ReefSelector;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -75,6 +77,8 @@ public class RobotContainer {
     private final Intake intake = new Intake();
     private final AlgaeIntake algaeIntake = new AlgaeIntake();
     private final AlgaePivot algaePivot = new AlgaePivot();
+
+    private final ReefSelector reefSelector = new ReefSelector();
 
     private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
         return new SequentialCommandGroup(
@@ -191,6 +195,11 @@ public class RobotContainer {
             arm.set(ArmLocation.ALGAE),
             intake.set(IntakeState.OUT)
         ));
+
+        operator.povUp().onTrue(Commands.runOnce(() -> reefSelector.goUp()));
+        operator.povDown().onTrue(Commands.runOnce(() -> reefSelector.goDown()));
+        operator.povLeft().onTrue(Commands.runOnce(() -> reefSelector.goLeft()));
+        operator.povRight().onTrue(Commands.runOnce(() -> reefSelector.goRight()));
 
         
         drivetrain.registerTelemetry(logger::telemeterize);

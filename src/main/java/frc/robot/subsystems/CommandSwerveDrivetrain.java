@@ -20,6 +20,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -31,6 +32,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -47,7 +49,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private RobotConfig config;
 
-    private AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+    // TU12 says that the Taiwan regional will use the AndyMark field
+    public static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
     private Transform3d robotToCam = new Transform3d(new Translation3d(-0.26, -0.23, 0.22), new Rotation3d(Degrees.of(0), Degrees.of(-30), Degrees.of(150)));
     private ExtendedPhotonCamera vision = new ExtendedPhotonCamera("BR_Cam", robotToCam, aprilTagFieldLayout);
 
@@ -55,6 +58,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private PhotonCameraSim cameraSim;
 
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
+
+    public static Field2d field2d = new Field2d();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -79,9 +84,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     ) {
         super(drivetrainConstants, modules);
         if (Utils.isSimulation()) {
-            startSimThread();
+            configureSimulation();
         }
         configurePPLib();
+        SmartDashboard.putData("Field", field2d);
     }
 
     /**
@@ -104,9 +110,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, modules);
         if (Utils.isSimulation()) {
-            startSimThread();
+            configureSimulation();
         }
         configurePPLib();
+        SmartDashboard.putData("Field", field2d);
     }
 
     /**
@@ -137,9 +144,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
         if (Utils.isSimulation()) {
-            startSimThread();
+            configureSimulation();
         }
         configurePPLib();
+        SmartDashboard.putData("Field", field2d);
     }
 
     private void configurePPLib() {
@@ -188,10 +196,49 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command applyRequest(ChassisSpeeds speeds) {        
-        SmartDashboard.putNumber("AutoSpeeds", speeds.vxMetersPerSecond);
-        SmartDashboard.putNumber("AutoRealSpeeds", m_pathApplyRobotSpeeds.withSpeeds(speeds).Speeds.vxMetersPerSecond);
-
         return applyRequest(() -> m_pathApplyRobotSpeeds.withSpeeds(speeds));
+    }
+
+    public static void setSelectedReef(Pose2d pose) {
+        field2d.getObject("selectedReef").setPose(pose);
+    }
+
+    private void configureSimulation() {
+        m_lastSimTime = Utils.getCurrentTimeSeconds();
+
+        /* Run simulation at a faster rate so PID gains behave more reasonably */
+        m_simNotifier = new Notifier(() -> {
+            final double currentTime = Utils.getCurrentTimeSeconds();
+            double deltaTime = currentTime - m_lastSimTime;
+            m_lastSimTime = currentTime;
+
+            /* use the measured time delta, get battery voltage from WPILib */
+            updateSimState(deltaTime, RobotController.getBatteryVoltage());
+        });
+        m_simNotifier.startPeriodic(kSimLoopPeriod);
+
+        // Setup PhotonVision Simulation
+        visionSim = new VisionSystemSim("main");
+        visionSim.addAprilTags(aprilTagFieldLayout);
+        SimCameraProperties cameraProperties = new SimCameraProperties();
+        cameraProperties.setCalibration(1280, 800, Rotation2d.fromDegrees(50));
+        cameraProperties.setCalibError(0.01, 0.08);
+        cameraProperties.setFPS(30);
+        cameraProperties.setAvgLatencyMs(35);
+        cameraProperties.setLatencyStdDevMs(5);
+        cameraSim = new PhotonCameraSim(vision.getCamera(), cameraProperties);
+
+        cameraSim.enableRawStream(true);
+        cameraSim.enableProcessedStream(true);
+        cameraSim.enableDrawWireframe(true);
+
+        visionSim.addCamera(cameraSim, robotToCam);
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        visionSim.update(this.getState().Pose);
+        updateSimState(0.02, RobotController.getBatteryVoltage());
     }
 
     @Override
@@ -220,43 +267,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 // Hours wasted because CTRE decided to use FPGA Time: 5
                 this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
         });
-    }
 
-    private void startSimThread() {
-        m_lastSimTime = Utils.getCurrentTimeSeconds();
-
-        /* Run simulation at a faster rate so PID gains behave more reasonably */
-        m_simNotifier = new Notifier(() -> {
-            final double currentTime = Utils.getCurrentTimeSeconds();
-            double deltaTime = currentTime - m_lastSimTime;
-            m_lastSimTime = currentTime;
-
-            /* use the measured time delta, get battery voltage from WPILib */
-            updateSimState(deltaTime, RobotController.getBatteryVoltage());
-        });
-        m_simNotifier.startPeriodic(kSimLoopPeriod);
-
-        // Setup PhotonVision Simulation
-        visionSim = new VisionSystemSim("main");
-        visionSim.addAprilTags(this.aprilTagFieldLayout);
-        SimCameraProperties cameraProperties = new SimCameraProperties();
-        cameraProperties.setCalibration(1280, 800, Rotation2d.fromDegrees(50));
-        cameraProperties.setCalibError(0.01, 0.08);
-        cameraProperties.setFPS(30);
-        cameraProperties.setAvgLatencyMs(35);
-        cameraProperties.setLatencyStdDevMs(5);
-        cameraSim = new PhotonCameraSim(vision.getCamera(), cameraProperties);
-
-        cameraSim.enableRawStream(true);
-        cameraSim.enableProcessedStream(true);
-        cameraSim.enableDrawWireframe(true);
-
-        visionSim.addCamera(cameraSim, robotToCam);
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        visionSim.update(this.getState().Pose);
-        updateSimState(0.02, RobotController.getBatteryVoltage());
+        field2d.setRobotPose(this.getState().Pose);
     }
 }
