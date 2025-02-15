@@ -102,7 +102,7 @@ public class Arm extends SubsystemBase {
 
     private void configureSimulation() {
         // The origin is the x-axis on a mathematical cartesian plane -->
-        sim = new SingleJointedArmSim(DCMotor.getKrakenX60(1), 80, 0.3, 0.4, Units.degreesToRadians(-90), Units.degreesToRadians(270), false, Units.degreesToRadians(90));
+        sim = new SingleJointedArmSim(DCMotor.getKrakenX60(1), 200, 0.3, 0.4, Units.degreesToRadians(-90), Units.degreesToRadians(270), false, Units.degreesToRadians(90));
         mech2d = Elevator.mech2d.append(new MechanismLigament2d("Arm", 0.4, 90-32, 10, new Color8Bit(Color.kDarkGreen)));
     }
 
@@ -114,8 +114,8 @@ public class Arm extends SubsystemBase {
 
         mech2d.setAngle(Rotation2d.fromRadians(sim.getAngleRads() - Math.PI/2));
 
-        motor.getSimState().setRawRotorPosition(Degrees.of((Units.radiansToDegrees(sim.getAngleRads()) - 90) * 80));
-        motor.getSimState().setRotorVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec() * 80));
+        motor.getSimState().setRawRotorPosition(Degrees.of((Units.radiansToDegrees(sim.getAngleRads()) - 90) * 200));
+        motor.getSimState().setRotorVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec() * 200));
 
         SmartDashboard.putNumber("Arm/Sim/SimDeg", Units.radiansToDegrees(sim.getAngleRads()));
     }
