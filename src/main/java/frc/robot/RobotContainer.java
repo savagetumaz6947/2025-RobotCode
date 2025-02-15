@@ -81,16 +81,16 @@ public class RobotContainer {
     private final ReefSelector reefSelector = new ReefSelector();
 
     private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
-        return new SequentialCommandGroup(
-            new ParallelCommandGroup( 
+        return Commands.sequence(
+            Commands.parallel( 
                 elevator.set(location),
                 arm.set(ArmLocation.OUTTAKE),
                 pivot.set(PivotLocation.OUTTAKE)
             ),
-                new WaitCommand(0.2),
+                Commands.waitSeconds(0.2),
                 intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
                 arm.set(ArmLocation.OUT),
-            new ParallelCommandGroup(
+            Commands.parallel(
                 pivot.set(PivotLocation.INTAKE),
                 arm.set(ArmLocation.INTAKE),
                 elevator.set(ElevatorLocation.BOTTOM)
@@ -125,10 +125,10 @@ public class RobotContainer {
             )
         );
 
-        joystick.rightTrigger().onTrue(new InstantCommand(() -> {
+        joystick.rightTrigger().onTrue(Commands.runOnce(() -> {
             speedSupplier = () -> MaxSpeed * 0.35;
         }));
-        joystick.rightTrigger().onFalse(new InstantCommand(() -> {
+        joystick.rightTrigger().onFalse(Commands.runOnce(() -> {
             speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
         }));
         
@@ -137,28 +137,25 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
 
-        // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
-        joystick.povDown().onTrue(new SequentialCommandGroup(
-            new ParallelCommandGroup( 
+        joystick.povDown().onTrue(Commands.sequence(
+            Commands.parallel( 
                 elevator.set(ElevatorLocation.BOTTOM),
                 arm.set(ArmLocation.GROUND),
                 pivot.set(PivotLocation.OUTTAKE)
             ),
                 intake.set(IntakeState.IN).repeatedly().withTimeout(1.5),
                 pivot.set(PivotLocation.INTAKE),
-                new ParallelCommandGroup(
+                Commands.parallel(
                     pivot.set(PivotLocation.OUTTAKE),
                     arm.set(ArmLocation.OUTTAKE)
                 ),
-            new ParallelCommandGroup(
+            Commands.parallel(
                 arm.set(ArmLocation.DEFAULT),
                 elevator.set(ElevatorLocation.BOTTOM)
             )
         ));
 
-        joystick.x().onTrue(new SequentialCommandGroup(
+        joystick.x().onTrue(Commands.sequence(
             elevator.set(ElevatorLocation.BOTTOM),
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.INTAKE),
@@ -168,17 +165,17 @@ public class RobotContainer {
             
         joystick.b().onTrue(putCoralToLevel.apply(ElevatorLocation.MID));
         joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
-        joystick.y().onTrue(new SequentialCommandGroup(
+        joystick.y().onTrue(Commands.sequence(
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.DEFAULT),
             elevator.set(ElevatorLocation.BOTTOM)
         ));            
 
-        joystick.leftBumper().or(operator.leftBumper()).onTrue(new ParallelCommandGroup(
+        joystick.leftBumper().or(operator.leftBumper()).onTrue(Commands.parallel(
             arm.eStop(),
             pivot.eStop(),
             elevator.eStop(),
-            new InstantCommand(() -> {}, drivetrain)
+            Commands.runOnce(() -> {}, drivetrain)
         ));
 //-------------------------------------------------------------------------------------------------------------------  
         
@@ -190,7 +187,7 @@ public class RobotContainer {
         operator.y().onTrue(algaePivot.set(AlgaePivotLocation.INTAKE));
         operator.a().onTrue(algaePivot.set(AlgaePivotLocation.OUTTAKE));
 
-        operator.rightBumper().onTrue(new SequentialCommandGroup(
+        operator.rightBumper().onTrue(Commands.sequence(
             elevator.set(ElevatorLocation.ALGAE),
             arm.set(ArmLocation.ALGAE),
             intake.set(IntakeState.OUT)
