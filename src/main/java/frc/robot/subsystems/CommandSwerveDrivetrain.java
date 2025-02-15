@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Degrees;
-
 import java.util.function.Supplier;
 
 import org.photonvision.simulation.PhotonCameraSim;
@@ -16,16 +14,13 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathPlannerPath;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -36,6 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.Constants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -49,10 +45,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private RobotConfig config;
 
-    // TU12 says that the Taiwan regional will use the AndyMark field
-    public static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
-    private Transform3d robotToCam = new Transform3d(new Translation3d(-0.26, -0.23, 0.22), new Rotation3d(Degrees.of(0), Degrees.of(-30), Degrees.of(150)));
-    private ExtendedPhotonCamera vision = new ExtendedPhotonCamera("BR_Cam", robotToCam, aprilTagFieldLayout);
+    private ExtendedPhotonCamera vision = new ExtendedPhotonCamera(Constants.Vision.CAMERA_NAME, Constants.Vision.ROBOT_TO_CAM, Constants.Vision.APRIL_TAG_FIELD_LAYOUT);
 
     private VisionSystemSim visionSim;
     private PhotonCameraSim cameraSim;
@@ -192,11 +185,39 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @return Command to run
      */
     public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-        return run(() -> this.setControl(requestSupplier.get()));
+        return this.run(() -> this.setControl(requestSupplier.get()));
     }
 
-    public Command applyRequest(ChassisSpeeds speeds) {        
-        return applyRequest(() -> m_pathApplyRobotSpeeds.withSpeeds(speeds));
+    /**
+     * Returns a command that drives this swerve drivetrain to a given target pose. This function will attempt to create a linear path from the current pose.
+     * Use Commands.defer when constructing this command: Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)).
+     * 
+     * @param targetPose The field-relative target pose
+     * @return Command to run from PPLib's AutoBuilder
+     */
+    public Command driveToPose(Pose2d targetPose) {
+        // Example usage
+        // joystick.rightBumper().whileTrue(
+        //     Commands.sequence(
+        //         Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+        //         Commands.defer(() -> putCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot))
+        //     )
+        // );
+
+        Translation2d currLocation = this.getState().Pose.getTranslation();
+        Rotation2d currToTargetAngle = Rotation2d.fromRadians(Math.atan((targetPose.getY() - currLocation.getY()) / (targetPose.getX() - currLocation.getX())));
+
+        PathPlannerPath path = new PathPlannerPath(
+            PathPlannerPath.waypointsFromPoses(
+                new Pose2d(currLocation, currToTargetAngle),
+                new Pose2d(targetPose.getTranslation(), currToTargetAngle)
+            ),
+            Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS,
+            null,
+            new GoalEndState(0.0, targetPose.getRotation()));
+        path.preventFlipping = true;
+
+        return AutoBuilder.followPath(path);
     }
 
     public static void setSelectedReef(Pose2d pose) {
@@ -219,11 +240,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // Setup PhotonVision Simulation
         visionSim = new VisionSystemSim("main");
-        visionSim.addAprilTags(aprilTagFieldLayout);
+        visionSim.addAprilTags(Constants.Vision.APRIL_TAG_FIELD_LAYOUT);
         SimCameraProperties cameraProperties = new SimCameraProperties();
-        cameraProperties.setCalibration(1280, 800, Rotation2d.fromDegrees(50));
+        cameraProperties.setCalibration(Constants.Vision.Simulated.WIDTH, Constants.Vision.Simulated.HEIGHT, Constants.Vision.Simulated.FOV);
         cameraProperties.setCalibError(0.01, 0.08);
-        cameraProperties.setFPS(30);
+        cameraProperties.setFPS(Constants.Vision.Simulated.FPS);
         cameraProperties.setAvgLatencyMs(35);
         cameraProperties.setLatencyStdDevMs(5);
         cameraSim = new PhotonCameraSim(vision.getCamera(), cameraProperties);
@@ -232,7 +253,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         cameraSim.enableProcessedStream(true);
         cameraSim.enableDrawWireframe(true);
 
-        visionSim.addCamera(cameraSim, robotToCam);
+        visionSim.addCamera(cameraSim, Constants.Vision.ROBOT_TO_CAM);
     }
 
     @Override

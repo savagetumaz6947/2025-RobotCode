@@ -1,24 +1,16 @@
 package frc.robot.utils;
 
-import static edu.wpi.first.units.Units.Meters;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Elevator.ElevatorLocation;
 
 public class ReefSelector {
-    // Positive doubles of apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.
-    protected static final double X_OFFSET = 0.2;
-    protected static final double Y_OFFSET = 0.2;
-    protected static final int[] blueAllianceTags = {18, 17, 22, 21, 20, 19};
-    protected static final int[] redAllianceTags = {7, 8, 9, 10, 11, 6};
-    protected static final AprilTagFieldLayout fieldLayout = CommandSwerveDrivetrain.aprilTagFieldLayout;
-
     // Reefs are labeled A-L based on the annotated PathPlanner grid.
     private char selectedReef = 'A';
     private int selectedLevel = 1;
@@ -33,13 +25,24 @@ public class ReefSelector {
 
         // Capital A has the ASCII code 65. int 65/2 = 32.
         Pose2d aprilTagPose = alliance == Alliance.Red ?
-            fieldLayout.getTagPose(redAllianceTags[(this.selectedReef - 1) / 2 - 32]).get().toPose2d() :
-            fieldLayout.getTagPose(blueAllianceTags[(this.selectedReef - 1) / 2 - 32]).get().toPose2d();
+            Constants.Vision.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.RED_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d() :
+            Constants.Vision.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.BLUE_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d();
 
-        this.selectedPose = aprilTagPose.plus(new Transform2d(Meters.of(X_OFFSET), Meters.of((this.selectedReef - 1) % 2 == 0 ? -Y_OFFSET : Y_OFFSET), Rotation2d.fromDegrees(0)));
+        this.selectedPose = aprilTagPose.rotateAround(aprilTagPose.getTranslation(), Rotation2d.fromDegrees(180))
+            .plus(new Transform2d(Constants.ReefSelector.X_OFFSET,
+                (this.selectedReef - 1) % 2 == 0 ? Constants.ReefSelector.Y_OFFSET : Constants.ReefSelector.Y_OFFSET.unaryMinus(),
+                Rotation2d.fromDegrees(0)));
 
         CommandSwerveDrivetrain.setSelectedReef(this.selectedPose);
-        SmartDashboard.putNumber("ReefSelector/Level", this.selectedLevel);
+        SmartDashboard.putString("ReefSelector/Selected", "" + this.selectedReef + this.selectedLevel);
+    }
+
+    public Pose2d getSelectedPose() {
+        return selectedPose;
+    }
+
+    public ElevatorLocation getElevatorLocation() {
+        return Constants.ReefSelector.ELEVATOR_LOCATIONS[selectedLevel];
     }
 
     public void goRight() {
