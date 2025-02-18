@@ -29,6 +29,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorLocation;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.LedStrip;
 import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.AlgaeIntake.AlgaeIntakeState;
@@ -71,6 +72,7 @@ public class RobotContainer {
     private final Intake intake = new Intake();
     private final AlgaeIntake algaeIntake = new AlgaeIntake();
     private final AlgaePivot algaePivot = new AlgaePivot();
+    private final LedStrip ledStrip = new LedStrip();
 
     private final ReefSelector reefSelector = new ReefSelector();
 
