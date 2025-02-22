@@ -149,15 +149,31 @@ public class RobotContainer {
         ));
 
         joystick.x().onTrue(Commands.sequence(
-            elevator.set(ElevatorLocation.CORALSTATION),
+            elevator.set(ElevatorLocation.BOTTOM),
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.INTAKE),
             intake.set(IntakeState.IN).repeatedly().withTimeout(3)
             )
         );
-            
+
+        joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
         joystick.b().onTrue(putCoralToLevel.apply(ElevatorLocation.MID));
-        joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
+        joystick.povUp().onTrue(Commands.sequence(
+            Commands.parallel( 
+                elevator.set(ElevatorLocation.TOP),
+                arm.set(ArmLocation.TOP),
+                pivot.set(PivotLocation.OUTTAKE)
+            ),
+                Commands.waitSeconds(0.2),
+                intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+                arm.set(ArmLocation.OUT),
+            Commands.parallel(
+                pivot.set(PivotLocation.INTAKE),
+                arm.set(ArmLocation.INTAKE),
+                elevator.set(ElevatorLocation.BOTTOM)
+            )
+        ));
+
         joystick.y().onTrue(Commands.sequence(
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.DEFAULT),
@@ -170,15 +186,15 @@ public class RobotContainer {
             elevator.eStop(),
             Commands.runOnce(() -> {}, drivetrain)
         ));
-//-------------------------------------------------------------------------------------------------------------------  
-        
-        joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
-//-------------------------------------------------------------------------------------------------------------------
 
-        operator.x().onTrue(algaeIntake.set(AlgaeIntakeState.OUT).repeatedly().withTimeout(0.6));
-        operator.b().onTrue(algaeIntake.set(AlgaeIntakeState.IN).repeatedly().withTimeout(0.6));
-        operator.y().onTrue(algaePivot.set(AlgaePivotLocation.INTAKE));
-        operator.a().onTrue(algaePivot.set(AlgaePivotLocation.OUTTAKE));
+        operator.x().onTrue(Commands.sequence(
+            algaePivot.set(AlgaePivotLocation.INTAKE),
+            algaeIntake.set(AlgaeIntakeState.IN).repeatedly().withTimeout(0.6)
+        ));
+        operator.a().onTrue(Commands.sequence(
+            algaePivot.set(AlgaePivotLocation.OUTTAKE),
+            algaeIntake.set(AlgaeIntakeState.OUT).repeatedly().withTimeout(0.6)
+        ));
 
         operator.rightBumper().onTrue(Commands.sequence(
             elevator.set(ElevatorLocation.ALGAE),

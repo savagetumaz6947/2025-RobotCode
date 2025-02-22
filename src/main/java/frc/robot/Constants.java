@@ -23,7 +23,7 @@ public class Constants {
     public static class Vision {
         public static final String CAMERA_NAME = "BR_Cam";
         // TU12 says that the Taiwan regional will use the AndyMark field
-        public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+        public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
         public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(0.26, 0, 0.50),
             new Rotation3d(Degrees.of(0), Degrees.of(40), Degrees.of(0)));
 

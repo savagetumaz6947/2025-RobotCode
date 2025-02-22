@@ -15,6 +15,10 @@ public class LedStrip extends SubsystemBase {
     private final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
     private static final Distance ledSpacing = Meters.of(1 / 60.0);
     private final LEDPattern scrollingRainbow = rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(0.5), ledSpacing);
+    private Elevator elevator;
+
+    private final LEDPattern pattern = LEDPattern.progressMaskLayer(() -> elevator.getheight() / elevator.getMaxHeight());
+
 
     public LedStrip () {
         led.setLength(buffer.getLength());
@@ -24,6 +28,7 @@ public class LedStrip extends SubsystemBase {
     @Override
     public void periodic() {
         scrollingRainbow.applyTo(buffer);
+        pattern.applyTo(buffer);
         led.setData(buffer);
     }
 }

@@ -28,7 +28,7 @@ public class Intake extends SubsystemBase {
     private SparkMaxSim motorSim;
 
     public enum IntakeState {
-        IN, OUT, DEFAULT
+        IN, OUT, DEFAULT, TEST
     };
 
     private Map<IntakeState, Double> stateMap = new HashMap<>();
