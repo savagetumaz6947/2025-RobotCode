@@ -46,7 +46,7 @@ public class Arm extends SubsystemBase {
         Slot0Configs armSlot0Configs = new Slot0Configs();
         armSlot0Configs.kP = 0.5;
         armSlot0Configs.kI = 0;
-        armSlot0Configs.kD = 0.2;
+        armSlot0Configs.kD = 0.15;
         armSlot0Configs.kV = 0.25;
         armSlot0Configs.kA = 0.1;
 
@@ -63,12 +63,12 @@ public class Arm extends SubsystemBase {
         motor.setPosition(0);
         motor.setNeutralMode(NeutralModeValue.Brake);
 
-        locationsMap.put(ArmLocation.INTAKE, -13.0);
-        locationsMap.put(ArmLocation.OUTTAKE, 26.0);
-        locationsMap.put(ArmLocation.OUT, 10.0);
-        locationsMap.put(ArmLocation.DEFAULT, 0.0);
-        locationsMap.put(ArmLocation.GROUND, 63.5);
-        locationsMap.put(ArmLocation.ALGAE, 70.0);
+        locationsMap.put(ArmLocation.INTAKE, 17.5);
+        locationsMap.put(ArmLocation.OUTTAKE, -26.0);
+        locationsMap.put(ArmLocation.OUT, -10.0);
+        locationsMap.put(ArmLocation.DEFAULT, 0.0);6
+        locationsMap.put(ArmLocation.GROUND, -63.5);
+        locationsMap.put(ArmLocation.ALGAE, -70.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
 

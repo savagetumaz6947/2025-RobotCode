@@ -149,7 +149,7 @@ public class RobotContainer {
         ));
 
         joystick.x().onTrue(Commands.sequence(
-            elevator.set(ElevatorLocation.BOTTOM),
+            elevator.set(ElevatorLocation.CORALSTATION),
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.INTAKE),
             intake.set(IntakeState.IN).repeatedly().withTimeout(3)
