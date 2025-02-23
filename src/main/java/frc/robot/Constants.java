@@ -3,6 +3,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 
+import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -17,15 +18,19 @@ import frc.robot.subsystems.Elevator.ElevatorLocation;
 public class Constants {
     public static class Drivetrain {
         // This constraint is solely used in the driveToPose() function by PPLib.
-        public static final PathConstraints DRIVE_TO_POSE_CONSTRAINTS = new PathConstraints(3, 3, 540, 720, 12, false);
+        public static final PathConstraints DRIVE_TO_POSE_CONSTRAINTS = new PathConstraints(1, 1, 540,
+            720, 12, false);
+        
+        // public static final PIDConstants DRIVE_TO_POSE_PID_TRANSLATION = new PIDConstants(1, 0, 0);
+        // public static final PIDConstants DRIVE_TO_POSE_PID_ROTATION = new PIDConstants(1, 0, 0);
     }
 
-    public static class Vision {
-        public static final String CAMERA_NAME = "BR_Cam";
+    public static class VisionDownCam {
+        public static final String CAMERA_NAME = "DownCam";
         // TU12 says that the Taiwan regional will use the AndyMark field
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
-        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(0.26, 0, 0.50),
-            new Rotation3d(Degrees.of(0), Degrees.of(40), Degrees.of(0)));
+        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.255, 0.175, 0.815),
+            new Rotation3d(Degrees.of(0), Degrees.of(30), Degrees.of(180)));
 
         public static class Simulated {
             public static final int WIDTH = 1280;
@@ -35,10 +40,26 @@ public class Constants {
         }
     }
 
+    public static class VisionUpCam {
+        public static final String CAMERA_NAME = "UpCam";
+        // TU12 says that the Taiwan regional will use the AndyMark field
+        public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.265, 0.175, 0.895),
+            new Rotation3d(Degrees.of(0), Degrees.of(-25), Degrees.of(180)));
+
+        public static class Simulated {
+            public static final int WIDTH = 1280;
+            public static final int HEIGHT = 800;
+            public static final Rotation2d FOV = Rotation2d.fromDegrees(100);
+            public static final int FPS = 30;
+        }
+    }
+
+
     public static class ReefSelector {
         // Apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.
         // X_OFFSET should always be negative (away from the tag).
-        public static final Distance X_OFFSET = Meters.of(-0.5);
+        public static final Distance X_OFFSET = Meters.of(-0.57);
         // Y_OFFSET is assumed to be positive (LEFT reef). The reason for this is that A1, the default scoring location, is on the left.
         public static final Distance Y_OFFSET = Meters.of(0.16);
 
@@ -49,6 +70,6 @@ public class Constants {
 
         // The elevator locations for levels 1 to 4. Level 0 does not exist, so null is placed instead.
         // This array MUST have 5 elements (0, 1, 2, 3, 4).
-        public static final ElevatorLocation[] ELEVATOR_LOCATIONS = {null, ElevatorLocation.BOTTOM, ElevatorLocation.BOTTOM, ElevatorLocation.MID, ElevatorLocation.TOP};
+        public static final ElevatorLocation[] ELEVATOR_LOCATIONS = {null, null, ElevatorLocation.BOTTOM, ElevatorLocation.MID, ElevatorLocation.TOP};
     }
 }

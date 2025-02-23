@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 
@@ -72,7 +73,7 @@ public class RobotContainer {
     private final Intake intake = new Intake();
     private final AlgaeIntake algaeIntake = new AlgaeIntake();
     private final AlgaePivot algaePivot = new AlgaePivot();
-    private final LedStrip ledStrip = new LedStrip();
+    private final LedStrip ledStrip = new LedStrip(() -> elevator.getHeight());
 
     private final ReefSelector reefSelector = new ReefSelector();
 
@@ -128,6 +129,13 @@ public class RobotContainer {
             speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
         }));
         
+        joystick.rightBumper().whileTrue(
+            Commands.sequence(
+                Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+                Commands.defer(() -> putCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot))
+            )
+        );
+
         joystick.leftTrigger().whileTrue(drivetrain.applyRequest(() -> brake));
 
         joystick.povDown().onTrue(Commands.sequence(
@@ -165,7 +173,7 @@ public class RobotContainer {
                 pivot.set(PivotLocation.OUTTAKE)
             ),
                 Commands.waitSeconds(0.2),
-                intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+                intake.set(IntakeState.OUT).repeatedly().withTimeout(1),
                 arm.set(ArmLocation.OUT),
             Commands.parallel(
                 pivot.set(PivotLocation.INTAKE),

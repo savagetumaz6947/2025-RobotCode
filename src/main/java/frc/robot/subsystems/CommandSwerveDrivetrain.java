@@ -21,6 +21,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -45,7 +46,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private RobotConfig config;
 
-    private ExtendedPhotonCamera vision = new ExtendedPhotonCamera(Constants.Vision.CAMERA_NAME, Constants.Vision.ROBOT_TO_CAM, Constants.Vision.APRIL_TAG_FIELD_LAYOUT);
+    private ExtendedPhotonCamera visionDown = new ExtendedPhotonCamera(Constants.VisionDownCam.CAMERA_NAME, Constants.VisionDownCam.ROBOT_TO_CAM, Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT);
+    private ExtendedPhotonCamera visionUp = new ExtendedPhotonCamera(Constants.VisionUpCam.CAMERA_NAME, Constants.VisionUpCam.ROBOT_TO_CAM, Constants.VisionUpCam.APRIL_TAG_FIELD_LAYOUT);
 
     private VisionSystemSim visionSim;
     private PhotonCameraSim cameraSim;
@@ -216,6 +218,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             null,
             new GoalEndState(0.0, targetPose.getRotation()));
         path.preventFlipping = true;
+        
+        try {
+            path.generateTrajectory(new ChassisSpeeds(), currLocation.getAngle(), config);
+        } catch (Exception e) {
+            return this.runOnce(() -> {});
+        }
 
         return AutoBuilder.followPath(path);
     }
@@ -240,20 +248,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // Setup PhotonVision Simulation
         visionSim = new VisionSystemSim("main");
-        visionSim.addAprilTags(Constants.Vision.APRIL_TAG_FIELD_LAYOUT);
+        visionSim.addAprilTags(Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT);
         SimCameraProperties cameraProperties = new SimCameraProperties();
-        cameraProperties.setCalibration(Constants.Vision.Simulated.WIDTH, Constants.Vision.Simulated.HEIGHT, Constants.Vision.Simulated.FOV);
+        cameraProperties.setCalibration(Constants.VisionDownCam.Simulated.WIDTH, Constants.VisionDownCam.Simulated.HEIGHT, Constants.VisionDownCam.Simulated.FOV);
         cameraProperties.setCalibError(0.01, 0.08);
-        cameraProperties.setFPS(Constants.Vision.Simulated.FPS);
+        cameraProperties.setFPS(Constants.VisionDownCam.Simulated.FPS);
         cameraProperties.setAvgLatencyMs(35);
         cameraProperties.setLatencyStdDevMs(5);
-        cameraSim = new PhotonCameraSim(vision.getCamera(), cameraProperties);
+        cameraSim = new PhotonCameraSim(visionDown.getCamera(), cameraProperties);
 
         cameraSim.enableRawStream(true);
         cameraSim.enableProcessedStream(true);
         cameraSim.enableDrawWireframe(true);
 
-        visionSim.addCamera(cameraSim, Constants.Vision.ROBOT_TO_CAM);
+        visionSim.addCamera(cameraSim, Constants.VisionDownCam.ROBOT_TO_CAM);
     }
 
     @Override
@@ -282,8 +290,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             });
         }
 
-        var visionEst = vision.getEstimatedGlobalPose();
-        visionEst.ifPresent(
+        var visionDownEst = visionDown.getEstimatedGlobalPose();
+        var visionUpEst = visionUp.getEstimatedGlobalPose();
+        visionDownEst.ifPresent(
+            est -> {
+                // Hours wasted because CTRE decided to use FPGA Time: 5
+                this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
+        });
+        visionUpEst.ifPresent(
             est -> {
                 // Hours wasted because CTRE decided to use FPGA Time: 5
                 this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));

@@ -36,7 +36,7 @@ public class Elevator extends SubsystemBase {
         BOTTOM, MID, TOP, UNDEFINED, ALGAE, SOURCE
     }
 
-    private Map<ElevatorLocation, Double> locationsMap = new HashMap<>();
+    private static Map<ElevatorLocation, Double> locationsMap = new HashMap<>();
     private ElevatorLocation state = ElevatorLocation.BOTTOM;
 
     private static ElevatorSim sim;
@@ -67,9 +67,9 @@ public class Elevator extends SubsystemBase {
         right.setNeutralMode(NeutralModeValue.Brake);
         right.setControl(new Follower(1, false));
 
-        locationsMap.put(ElevatorLocation.BOTTOM, 3.0);
-        locationsMap.put(ElevatorLocation.MID, 14.5);
-        locationsMap.put(ElevatorLocation.TOP, 33.0);
+        locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
+        locationsMap.put(ElevatorLocation.MID, 13.5);
+        locationsMap.put(ElevatorLocation.TOP, 31.0);
         locationsMap.put(ElevatorLocation.ALGAE, 20.0);
         locationsMap.put(ElevatorLocation.SOURCE, 6.0);
 
@@ -106,12 +106,12 @@ public class Elevator extends SubsystemBase {
         return state;
     }
 
-    public double getheight(){
+    public double getHeight(){
         return left.getPosition().getValueAsDouble();
     }
 
-    public double getMaxHeight(){
-        return 33.0;
+    public static double getMaxHeight(){
+        return locationsMap.get(ElevatorLocation.TOP);
     }
 
     public Command eStop() {
