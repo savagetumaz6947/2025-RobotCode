@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "PutArmSafe"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ExitToEF"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PutE4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "EFtoSource"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "GetCoral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SourceToCD"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": null,
+  "choreoAuto": false
+}

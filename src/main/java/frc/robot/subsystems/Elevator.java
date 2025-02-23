@@ -44,8 +44,8 @@ public class Elevator extends SubsystemBase {
 
     public Elevator() {
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 70;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 100;
+        motionMagicConfigs.MotionMagicAcceleration = 80;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 120;
         motionMagicConfigs.MotionMagicJerk = 500;
        
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
@@ -69,7 +69,7 @@ public class Elevator extends SubsystemBase {
 
         locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
         locationsMap.put(ElevatorLocation.MID, 13.5);
-        locationsMap.put(ElevatorLocation.TOP, 31.0);
+        locationsMap.put(ElevatorLocation.TOP, 33.0);
         locationsMap.put(ElevatorLocation.ALGAE, 20.0);
         locationsMap.put(ElevatorLocation.SOURCE, 6.0);
 

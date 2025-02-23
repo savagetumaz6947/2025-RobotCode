@@ -15,6 +15,7 @@ import java.util.function.Function;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -81,11 +82,11 @@ public class RobotContainer {
         return Commands.sequence(
             Commands.parallel( 
                 elevator.set(location),
-                arm.set(ArmLocation.OUTTAKE),
+                arm.set(ArmLocation.TOP),
                 pivot.set(PivotLocation.OUTTAKE)
             ),
                 Commands.waitSeconds(0.2),
-                intake.set(IntakeState.OUT).repeatedly().withTimeout(0.5),
+                intake.set(IntakeState.OUT).repeatedly().withTimeout(1),
                 arm.set(ArmLocation.OUT),
             Commands.parallel(
                 pivot.set(PivotLocation.INTAKE),
@@ -97,11 +98,26 @@ public class RobotContainer {
 
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
+        NamedCommands.registerCommand("PutArmSafe", arm.set(ArmLocation.INTAKE));
+        for (char r = 'A'; r <= 'L'; r++) {
+            for (int i = 2; i <= 4; i++) {
+                final char fr = r;
+                final int fi = i;
+                NamedCommands.registerCommand("Put" + fr + i, Commands.sequence(
+                    Commands.runOnce(() -> reefSelector.setReef(fr, fi)),
+                    Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+                    Commands.defer(() -> putCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
+                ));
+            }
+        }
+        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(3));
+
         autoChooser = AutoBuilder.buildAutoChooser();
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         configureBindings();
+
 
         if (Robot.isSimulation()) {
             SmartDashboard.putData("Sim/BigMechanism", bigMech2d);
@@ -129,10 +145,10 @@ public class RobotContainer {
             speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
         }));
         
-        joystick.rightBumper().whileTrue(
+        joystick.rightBumper().onTrue(
             Commands.sequence(
-                Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
-                Commands.defer(() -> putCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot))
+                Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain))
+                //Commands.defer(() -> putCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
             )
         );
 
@@ -166,21 +182,7 @@ public class RobotContainer {
 
         joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
         joystick.b().onTrue(putCoralToLevel.apply(ElevatorLocation.MID));
-        joystick.povUp().onTrue(Commands.sequence(
-            Commands.parallel( 
-                elevator.set(ElevatorLocation.TOP),
-                arm.set(ArmLocation.TOP),
-                pivot.set(PivotLocation.OUTTAKE)
-            ),
-                Commands.waitSeconds(0.2),
-                intake.set(IntakeState.OUT).repeatedly().withTimeout(1),
-                arm.set(ArmLocation.OUT),
-            Commands.parallel(
-                pivot.set(PivotLocation.INTAKE),
-                arm.set(ArmLocation.INTAKE),
-                elevator.set(ElevatorLocation.BOTTOM)
-            )
-        ));
+        joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
 
         joystick.y().onTrue(Commands.sequence(
             pivot.set(PivotLocation.INTAKE),
@@ -192,6 +194,7 @@ public class RobotContainer {
             arm.eStop(),
             pivot.eStop(),
             elevator.eStop(),
+            intake.eStop(),
             Commands.runOnce(() -> {}, drivetrain)
         ));
 
@@ -203,6 +206,7 @@ public class RobotContainer {
             algaePivot.set(AlgaePivotLocation.OUTTAKE),
             algaeIntake.set(AlgaeIntakeState.OUT).repeatedly().withTimeout(0.6)
         ));
+        operator.b().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(0.6));
 
         operator.rightBumper().onTrue(Commands.sequence(
             elevator.set(ElevatorLocation.ALGAE),

@@ -40,12 +40,12 @@ public class Intake extends SubsystemBase {
 
     public Intake() {
         SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
-        sparkMaxConfig.smartCurrentLimit(10, 10);
+        sparkMaxConfig.smartCurrentLimit(20, 20);
         motor.configure(sparkMaxConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         stateMap.put(IntakeState.DEFAULT, 0.5);
         stateMap.put(IntakeState.IN, 12.0);
-        stateMap.put(IntakeState.OUT, -2.5);
+        stateMap.put(IntakeState.OUT, -1.5);
         
         this.setDefaultCommand(this.set(IntakeState.DEFAULT).repeatedly());
 

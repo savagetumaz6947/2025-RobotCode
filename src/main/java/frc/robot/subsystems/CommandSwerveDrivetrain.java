@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -292,16 +293,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         var visionDownEst = visionDown.getEstimatedGlobalPose();
         var visionUpEst = visionUp.getEstimatedGlobalPose();
-        visionDownEst.ifPresent(
-            est -> {
-                // Hours wasted because CTRE decided to use FPGA Time: 5
-                this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
-        });
-        visionUpEst.ifPresent(
-            est -> {
-                // Hours wasted because CTRE decided to use FPGA Time: 5
-                this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
-        });
+            visionDownEst.ifPresent(
+                est -> {
+                    // Hours wasted because CTRE decided to use FPGA Time: 5
+                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
+            });
+        if (RobotState.isDisabled()) {
+            visionUpEst.ifPresent(
+                est -> {
+                    // Hours wasted because CTRE decided to use FPGA Time: 5
+                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
+            });
+        }
 
         field2d.setRobotPose(this.getState().Pose);
     }
