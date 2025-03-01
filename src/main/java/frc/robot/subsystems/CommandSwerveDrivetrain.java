@@ -51,7 +51,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private ExtendedPhotonCamera visionUp = new ExtendedPhotonCamera(Constants.VisionUpCam.CAMERA_NAME, Constants.VisionUpCam.ROBOT_TO_CAM, Constants.VisionUpCam.APRIL_TAG_FIELD_LAYOUT);
 
     private VisionSystemSim visionSim;
-    private PhotonCameraSim cameraSim;
+    private PhotonCameraSim cameraDownSim;
+    private PhotonCameraSim cameraUpSim;
 
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
@@ -162,8 +163,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
             ), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
             new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                new PIDConstants(7.5, 0.0, 0.05), // Translation PID constants500
+                new PIDConstants(3, 0.0, 0.05) // Rotation PID constants500
+    
             ),
             config, // The robot configuration
             () -> {
@@ -208,7 +210,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // );
 
         Translation2d currLocation = this.getState().Pose.getTranslation();
-        Rotation2d currToTargetAngle = Rotation2d.fromRadians(Math.atan((targetPose.getY() - currLocation.getY()) / (targetPose.getX() - currLocation.getX())));
+        Rotation2d currToTargetAngle = Rotation2d.fromRadians(
+        Math.atan2(targetPose.getY() - currLocation.getY(), targetPose.getX() - currLocation.getX()));//算法
 
         PathPlannerPath path = new PathPlannerPath(
             PathPlannerPath.waypointsFromPoses(
@@ -250,19 +253,34 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Setup PhotonVision Simulation
         visionSim = new VisionSystemSim("main");
         visionSim.addAprilTags(Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT);
-        SimCameraProperties cameraProperties = new SimCameraProperties();
-        cameraProperties.setCalibration(Constants.VisionDownCam.Simulated.WIDTH, Constants.VisionDownCam.Simulated.HEIGHT, Constants.VisionDownCam.Simulated.FOV);
-        cameraProperties.setCalibError(0.01, 0.08);
-        cameraProperties.setFPS(Constants.VisionDownCam.Simulated.FPS);
-        cameraProperties.setAvgLatencyMs(35);
-        cameraProperties.setLatencyStdDevMs(5);
-        cameraSim = new PhotonCameraSim(visionDown.getCamera(), cameraProperties);
 
-        cameraSim.enableRawStream(true);
-        cameraSim.enableProcessedStream(true);
-        cameraSim.enableDrawWireframe(true);
+        SimCameraProperties cameraDownProperties = new SimCameraProperties();
+        cameraDownProperties.setCalibration(Constants.VisionDownCam.Simulated.WIDTH, Constants.VisionDownCam.Simulated.HEIGHT, Constants.VisionDownCam.Simulated.FOV);
+        cameraDownProperties.setCalibError(0.01, 0.08);
+        cameraDownProperties.setFPS(Constants.VisionDownCam.Simulated.FPS);
+        cameraDownProperties.setAvgLatencyMs(35);
+        cameraDownProperties.setLatencyStdDevMs(5);
+        cameraDownSim = new PhotonCameraSim(visionDown.getCamera(), cameraDownProperties);
 
-        visionSim.addCamera(cameraSim, Constants.VisionDownCam.ROBOT_TO_CAM);
+        cameraDownSim.enableRawStream(true);
+        cameraDownSim.enableProcessedStream(true);
+        cameraDownSim.enableDrawWireframe(true);
+
+        visionSim.addCamera(cameraDownSim, Constants.VisionDownCam.ROBOT_TO_CAM);
+
+        SimCameraProperties cameraUpProperties = new SimCameraProperties();
+        cameraUpProperties.setCalibration(Constants.VisionUpCam.Simulated.WIDTH, Constants.VisionUpCam.Simulated.HEIGHT, Constants.VisionUpCam.Simulated.FOV);
+        cameraUpProperties.setCalibError(0.01, 0.08);
+        cameraUpProperties.setFPS(Constants.VisionUpCam.Simulated.FPS);
+        cameraUpProperties.setAvgLatencyMs(35);
+        cameraUpProperties.setLatencyStdDevMs(5);
+        cameraUpSim = new PhotonCameraSim(visionUp.getCamera(), cameraUpProperties);
+
+        cameraUpSim.enableRawStream(true);
+        cameraUpSim.enableProcessedStream(true);
+        cameraUpSim.enableDrawWireframe(true);
+
+        visionSim.addCamera(cameraUpSim, Constants.VisionUpCam.ROBOT_TO_CAM);
     }
 
     @Override

@@ -20,7 +20,7 @@ public class AlgaePivot extends SubsystemBase {
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 //------------------------------------------------------------------------------------------------------------------------
     public enum AlgaePivotLocation {
-        INTAKE, OUTTAKE, UNDEFINED
+        INTAKE, DEFAULT, UNDEFINED
     }
 
     private Map<AlgaePivotLocation, Double> locationsMap = new HashMap<>();
@@ -44,8 +44,8 @@ public class AlgaePivot extends SubsystemBase {
         motor.setNeutralMode(NeutralModeValue.Brake);
         motor.setPosition(0);
 
-        locationsMap.put(AlgaePivotLocation.INTAKE, 0.0);
-        locationsMap.put(AlgaePivotLocation.OUTTAKE, -7.0);
+        locationsMap.put(AlgaePivotLocation.INTAKE, -5.5);
+        locationsMap.put(AlgaePivotLocation.DEFAULT, 0.0);
 
         this.setDefaultCommand(this.set(() -> 0).repeatedly());
     }
@@ -67,7 +67,7 @@ public class AlgaePivot extends SubsystemBase {
     public double getFeedForward() {
         double kG = 0.4;
         double currentPosition = motor.getPosition().getValueAsDouble(); 
-        if (MathUtil.isNear(currentPosition, -7.0, 1.0)) 
+        if (MathUtil.isNear(currentPosition, -5.5, 1.0)) 
         {  
             return kG;  
         } else 

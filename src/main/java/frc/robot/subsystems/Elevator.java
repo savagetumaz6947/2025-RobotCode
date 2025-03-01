@@ -50,10 +50,11 @@ public class Elevator extends SubsystemBase {
        
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
         elevatorSlot0Configs.kP = 0.8;
-        elevatorSlot0Configs.kI = 0.15;
+        elevatorSlot0Configs.kI = 0.0;
         elevatorSlot0Configs.kD = 0.25;
         elevatorSlot0Configs.kV = 0.1; 
         elevatorSlot0Configs.kA = 0.01; 
+        elevatorSlot0Configs.kS = 0.1; 
         
         left.getConfigurator().apply(elevatorSlot0Configs);
         left.getConfigurator().apply(motionMagicConfigs);
@@ -97,7 +98,7 @@ public class Elevator extends SubsystemBase {
         double kG = 0.35;
         double position = left.getPosition().getValueAsDouble();
         if (position < 2.0) {
-            return 0.15;
+            return 0.3;
         }
         return (position > 25.0) ? kG + 0.1 : kG;
     }

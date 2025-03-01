@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Arm.ArmLocation;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
@@ -75,6 +76,7 @@ public class RobotContainer {
     private final AlgaeIntake algaeIntake = new AlgaeIntake();
     private final AlgaePivot algaePivot = new AlgaePivot();
     private final LedStrip ledStrip = new LedStrip(() -> elevator.getHeight());
+    private final Climber climber = new Climber();
 
     private final ReefSelector reefSelector = new ReefSelector();
 
@@ -96,6 +98,14 @@ public class RobotContainer {
         );
     };
 
+    private Function<ElevatorLocation, Command> riseToLevel = (location) -> {
+        return Commands.parallel( 
+                elevator.set(location),
+                arm.set(ArmLocation.TOP),
+                pivot.set(PivotLocation.OUTTAKE)
+        );
+    };
+
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
         NamedCommands.registerCommand("PutArmSafe", arm.set(ArmLocation.INTAKE));
@@ -110,6 +120,7 @@ public class RobotContainer {
                 ));
             }
         }
+
         NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(3));
 
         autoChooser = AutoBuilder.buildAutoChooser();
@@ -124,7 +135,7 @@ public class RobotContainer {
             SmartDashboard.putData("Sim/SmallMechanism", smallMech2d);
         }
     }
-    private DoubleSupplier speedSupplier = () -> MaxSpeed * 0.2;
+    private DoubleSupplier speedSupplier = () -> MaxSpeed * 0.25;
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
@@ -137,9 +148,10 @@ public class RobotContainer {
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+        climber.setDefaultCommand(climber.setVoltageCommand(() -> operator.getRightY()));
 
         joystick.rightTrigger().onTrue(Commands.runOnce(() -> {
-            speedSupplier = () -> MaxSpeed * 0.35;
+            speedSupplier = () -> MaxSpeed * 0.4;
         }));
         joystick.rightTrigger().onFalse(Commands.runOnce(() -> {
             speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
@@ -157,19 +169,9 @@ public class RobotContainer {
         joystick.povDown().onTrue(Commands.sequence(
             Commands.parallel( 
                 elevator.set(ElevatorLocation.BOTTOM),
-                arm.set(ArmLocation.GROUND),
-                pivot.set(PivotLocation.OUTTAKE)
+                arm.set(ArmLocation.GROUND)
             ),
-                intake.set(IntakeState.IN).repeatedly().withTimeout(1.5),
-                pivot.set(PivotLocation.INTAKE),
-                Commands.parallel(
-                    pivot.set(PivotLocation.OUTTAKE),
-                    arm.set(ArmLocation.OUTTAKE)
-                ),
-            Commands.parallel(
-                arm.set(ArmLocation.DEFAULT),
-                elevator.set(ElevatorLocation.BOTTOM)
-            )
+                intake.set(IntakeState.IN).repeatedly().withTimeout(5)
         ));
 
         joystick.x().onTrue(Commands.sequence(
@@ -198,19 +200,17 @@ public class RobotContainer {
             Commands.runOnce(() -> {}, drivetrain)
         ));
 
-        operator.x().onTrue(Commands.sequence(
-            algaePivot.set(AlgaePivotLocation.INTAKE),
-            algaeIntake.set(AlgaeIntakeState.IN).repeatedly().withTimeout(0.6)
-        ));
-        operator.a().onTrue(Commands.sequence(
-            algaePivot.set(AlgaePivotLocation.OUTTAKE),
-            algaeIntake.set(AlgaeIntakeState.OUT).repeatedly().withTimeout(0.6)
-        ));
+        operator.rightTrigger().onTrue(algaeIntake.set(AlgaeIntakeState.IN).repeatedly().withTimeout(0.6));
+        operator.leftTrigger().onTrue(algaeIntake.set(AlgaeIntakeState.OUT).repeatedly().withTimeout(0.6));
+        operator.x().onTrue(algaePivot.set(AlgaePivotLocation.INTAKE));
+        operator.a().onTrue(algaePivot.set(AlgaePivotLocation.DEFAULT));
+
         operator.b().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(0.6));
 
         operator.rightBumper().onTrue(Commands.sequence(
             elevator.set(ElevatorLocation.ALGAE),
             arm.set(ArmLocation.ALGAE),
+
             intake.set(IntakeState.OUT)
         ));
 
