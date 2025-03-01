@@ -19,21 +19,21 @@ public class DriveToPose extends Command {
 
     private final SwerveRequest.FieldCentricFacingAngle centricControl = new SwerveRequest.FieldCentricFacingAngle()
             .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
-            .withHeadingPID(Constants.Drivetrain.ROTATION_kP, Constants.Drivetrain.ROTATION_kI,
-                    Constants.Drivetrain.ROTATION_kD);
+            .withHeadingPID(Constants.Drivetrain.DriveToPose.ROTATION_kP, Constants.Drivetrain.DriveToPose.ROTATION_kI,
+                    Constants.Drivetrain.DriveToPose.ROTATION_kD);
     private final SwerveRequest.SwerveDriveBrake brakeControl = new SwerveRequest.SwerveDriveBrake();
 
-    private PIDController xPidController = new PIDController(Constants.Drivetrain.TRANSLATION_kP,
-            Constants.Drivetrain.TRANSLATION_kI, Constants.Drivetrain.TRANSLATION_kD);
-    private PIDController yPidController = new PIDController(Constants.Drivetrain.TRANSLATION_kP,
-            Constants.Drivetrain.TRANSLATION_kI, Constants.Drivetrain.TRANSLATION_kD);
+    private PIDController xPidController = new PIDController(Constants.Drivetrain.DriveToPose.TRANSLATION_kP,
+            Constants.Drivetrain.DriveToPose.TRANSLATION_kI, Constants.Drivetrain.DriveToPose.TRANSLATION_kD);
+    private PIDController yPidController = new PIDController(Constants.Drivetrain.DriveToPose.TRANSLATION_kP,
+            Constants.Drivetrain.DriveToPose.TRANSLATION_kI, Constants.Drivetrain.DriveToPose.TRANSLATION_kD);
 
     private TrapezoidProfile xTrapezoidProfile = new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS.maxVelocityMPS(),
-                    Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS.maxAccelerationMPSSq()));
+            new TrapezoidProfile.Constraints(Constants.Drivetrain.DriveToPose.CONSTRAINTS.maxVelocityMPS(),
+                    Constants.Drivetrain.DriveToPose.CONSTRAINTS.maxAccelerationMPSSq()));
     private TrapezoidProfile yTrapezoidProfile = new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS.maxVelocityMPS(),
-                    Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS.maxAccelerationMPSSq()));
+            new TrapezoidProfile.Constraints(Constants.Drivetrain.DriveToPose.CONSTRAINTS.maxVelocityMPS(),
+                    Constants.Drivetrain.DriveToPose.CONSTRAINTS.maxAccelerationMPSSq()));
 
     TrapezoidProfile.State xSetpoint;
     TrapezoidProfile.State ySetpoint;
@@ -43,9 +43,9 @@ public class DriveToPose extends Command {
         this.targetPose = targetPose;
 
         // Configure PID controllers for driveToPose()
-        xPidController.setTolerance(Constants.Drivetrain.TRANSLATION_TOLERANCE);
-        yPidController.setTolerance(Constants.Drivetrain.TRANSLATION_TOLERANCE);
-        centricControl.HeadingController.setTolerance(Constants.Drivetrain.ROTATION_TOLERANCE);
+        xPidController.setTolerance(Constants.Drivetrain.DriveToPose.TRANSLATION_TOLERANCE);
+        yPidController.setTolerance(Constants.Drivetrain.DriveToPose.TRANSLATION_TOLERANCE);
+        centricControl.HeadingController.setTolerance(Constants.Drivetrain.DriveToPose.ROTATION_TOLERANCE);
 
         xSetpoint = new TrapezoidProfile.State(swerve.getState().Pose.getX(),
                 swerve.getState().Speeds.vxMetersPerSecond);
@@ -71,10 +71,10 @@ public class DriveToPose extends Command {
     public boolean isFinished() {
         return centricControl.HeadingController.atSetpoint() &&
                 MathUtil.isNear(targetPose.getX(), swerve.getState().Pose.getX(),
-                        Constants.Drivetrain.TRANSLATION_TOLERANCE)
+                        Constants.Drivetrain.DriveToPose.TRANSLATION_TOLERANCE)
                 &&
                 MathUtil.isNear(targetPose.getY(), swerve.getState().Pose.getY(),
-                        Constants.Drivetrain.TRANSLATION_TOLERANCE);
+                        Constants.Drivetrain.DriveToPose.TRANSLATION_TOLERANCE);
     }
 
     @Override

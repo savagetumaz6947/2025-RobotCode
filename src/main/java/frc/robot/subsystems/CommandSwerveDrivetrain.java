@@ -11,9 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
 
@@ -164,11 +162,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
             ), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                new PIDConstants(7.5, 0.0, 0.05), // Translation PID constants500
-                new PIDConstants(3, 0.0, 0.05) // Rotation PID constants500
-    
-            ),
+            Constants.Drivetrain.PP_HOLONOMIC_DRIVE_CONTROLLER,
             config, // The robot configuration
             () -> {
               // Boolean supplier that controls when the path will be mirrored for the red alliance
@@ -211,17 +205,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         //     )
         // );
 
-        if (Constants.Drivetrain.USE_PPLIB_FOR_AUTOALIGN) {
+        if (Constants.Drivetrain.DriveToPose.USE_PPLIB) {
             // USE PPLib
             Translation2d currLocation = this.getState().Pose.getTranslation();
-            Rotation2d currToTargetAngle = Rotation2d.fromRadians(Math.atan2(targetPose.getY() - currLocation.getY(), targetPose.getX() - currLocation.getX()));//算法
+            Rotation2d currToTargetAngle = Rotation2d.fromRadians(Math.atan2(targetPose.getY() - currLocation.getY(), targetPose.getX() - currLocation.getX()));
 
             PathPlannerPath path = new PathPlannerPath(
                 PathPlannerPath.waypointsFromPoses(
                     new Pose2d(currLocation, currToTargetAngle),
                     new Pose2d(targetPose.getTranslation(), currToTargetAngle)
                 ),
-                Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS,
+                Constants.Drivetrain.DriveToPose.CONSTRAINTS,
                 null,
                 new GoalEndState(0.0, targetPose.getRotation()));
             path.preventFlipping = true;
