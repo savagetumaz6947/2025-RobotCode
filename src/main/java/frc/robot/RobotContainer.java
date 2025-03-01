@@ -50,7 +50,6 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final SendableChooser<Command> autoChooser;
@@ -80,6 +79,34 @@ public class RobotContainer {
 
     private final ReefSelector reefSelector = new ReefSelector();
 
+    private Function<ElevatorLocation, Command> prepareCoralToLevel = (location) -> {
+        return Commands.parallel( 
+            elevator.set(location),
+            arm.set(ArmLocation.TOP),
+            pivot.set(PivotLocation.OUTTAKE)
+        );
+    };
+
+    private Command spitCoral = Commands.sequence(
+        Commands.deadline(
+            Commands.waitSeconds(1),
+            arm.set(ArmLocation.SPIT),
+            Commands.sequence(
+                Commands.waitSeconds(0.5),
+                intake.set(IntakeState.OUT)
+            )
+        ),
+        Commands.parallel(
+            arm.set(ArmLocation.INTAKE),
+            Commands.sequence(
+                Commands.waitSeconds(0.5),
+                elevator.set(ElevatorLocation.BOTTOM),
+                pivot.set(PivotLocation.INTAKE)
+            )
+        )
+    );
+
+    @Deprecated
     private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
         return Commands.sequence(
             Commands.parallel( 
@@ -89,20 +116,11 @@ public class RobotContainer {
             ),
                 Commands.waitSeconds(0.2),
                 intake.set(IntakeState.OUT).repeatedly().withTimeout(1),
-                arm.set(ArmLocation.OUT),
             Commands.parallel(
                 pivot.set(PivotLocation.INTAKE),
                 arm.set(ArmLocation.INTAKE),
                 elevator.set(ElevatorLocation.BOTTOM)
             )
-        );
-    };
-
-    private Function<ElevatorLocation, Command> riseToLevel = (location) -> {
-        return Commands.parallel( 
-                elevator.set(location),
-                arm.set(ArmLocation.TOP),
-                pivot.set(PivotLocation.OUTTAKE)
         );
     };
 
@@ -158,33 +176,33 @@ public class RobotContainer {
         }));
         
         joystick.rightBumper().onTrue(
-            Commands.sequence(
-                Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain))
-                //Commands.defer(() -> putCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
+            Commands.parallel(
+                Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+                Commands.defer(() -> prepareCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot))
             )
         );
 
-        joystick.leftTrigger().whileTrue(drivetrain.applyRequest(() -> brake));
-
-        joystick.povDown().onTrue(Commands.sequence(
+        joystick.povDown().whileTrue(
             Commands.parallel( 
-                elevator.set(ElevatorLocation.BOTTOM),
-                arm.set(ArmLocation.GROUND)
-            ),
-                intake.set(IntakeState.IN).repeatedly().withTimeout(5)
-        ));
+                elevator.set(ElevatorLocation.DOWNINTAKE),
+                arm.set(ArmLocation.GROUND),
+                intake.set(IntakeState.IN).repeatedly(),
+                pivot.set(PivotLocation.INTAKE)
+            )
+        );
+        joystick.povDown().toggleOnFalse(prepareCoralToLevel.apply(ElevatorLocation.BOTTOM));
 
-        joystick.x().onTrue(Commands.sequence(
+        joystick.x().onTrue(Commands.parallel(
             elevator.set(ElevatorLocation.BOTTOM),
             pivot.set(PivotLocation.INTAKE),
             arm.set(ArmLocation.INTAKE),
             intake.set(IntakeState.IN).repeatedly().withTimeout(3)
-            )
-        );
+        ));
 
-        joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
-        joystick.b().onTrue(putCoralToLevel.apply(ElevatorLocation.MID));
-        joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
+        // joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
+        // joystick.b().onTrue(putCoralToLevel.apply(ElevatorLocation.MID));
+        // joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
+        joystick.b().onTrue(spitCoral);
 
         joystick.y().onTrue(Commands.sequence(
             pivot.set(PivotLocation.INTAKE),
@@ -200,10 +218,14 @@ public class RobotContainer {
             Commands.runOnce(() -> {}, drivetrain)
         ));
 
-        operator.rightTrigger().onTrue(algaeIntake.set(AlgaeIntakeState.IN).repeatedly().withTimeout(0.6));
-        operator.leftTrigger().onTrue(algaeIntake.set(AlgaeIntakeState.OUT).repeatedly().withTimeout(0.6));
-        operator.x().onTrue(algaePivot.set(AlgaePivotLocation.INTAKE));
-        operator.a().onTrue(algaePivot.set(AlgaePivotLocation.DEFAULT));
+        operator.rightTrigger().whileTrue(Commands.parallel(
+            algaeIntake.set(AlgaeIntakeState.IN).repeatedly(),
+            algaePivot.set(AlgaePivotLocation.INTAKE)
+        ));
+        operator.leftTrigger().whileTrue(Commands.parallel(
+            algaeIntake.set(AlgaeIntakeState.OUT).repeatedly(),
+            algaePivot.set(AlgaePivotLocation.DEFAULT)
+        ));
 
         operator.b().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(0.6));
 

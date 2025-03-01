@@ -33,7 +33,7 @@ public class Elevator extends SubsystemBase {
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 
     public enum ElevatorLocation {
-        BOTTOM, MID, TOP, UNDEFINED, ALGAE, SOURCE
+        BOTTOM, MID, TOP, UNDEFINED, ALGAE, SOURCE, DOWNINTAKE
     }
 
     private static Map<ElevatorLocation, Double> locationsMap = new HashMap<>();
@@ -44,8 +44,8 @@ public class Elevator extends SubsystemBase {
 
     public Elevator() {
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 80;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 120;
+        motionMagicConfigs.MotionMagicAcceleration = 100;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 150;
         motionMagicConfigs.MotionMagicJerk = 500;
        
         Slot0Configs elevatorSlot0Configs = new Slot0Configs();
@@ -66,13 +66,14 @@ public class Elevator extends SubsystemBase {
         left.setPosition(0);
 
         right.setNeutralMode(NeutralModeValue.Brake);
-        right.setControl(new Follower(1, false));
+        right.setControl(new Follower(left.getDeviceID(), false));
 
         locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
         locationsMap.put(ElevatorLocation.MID, 13.5);
         locationsMap.put(ElevatorLocation.TOP, 33.0);
         locationsMap.put(ElevatorLocation.ALGAE, 20.0);
         locationsMap.put(ElevatorLocation.SOURCE, 6.0);
+        locationsMap.put(ElevatorLocation.DOWNINTAKE, 5.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
 

@@ -11,21 +11,34 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.subsystems.Elevator.ElevatorLocation;
 
 public class Constants {
     public static class Drivetrain {
-        // This constraint is solely used in the driveToPose() function by PPLib.
-        public static final PathConstraints DRIVE_TO_POSE_CONSTRAINTS = new PathConstraints(1, 1.5, 180,
+        // Whether to use PPLib in the driveToPose() function.
+        public static final boolean USE_PPLIB_FOR_AUTOALIGN = false;
+        // This constraint is used in the driveToPose() function by PPLib AND PIDControl.
+        public static final PathConstraints DRIVE_TO_POSE_CONSTRAINTS = new PathConstraints(3, 2, 180,
             240, 12, false);//1.1.540.720
+        // These constraints are solely used in the driveToPose() function by PIDControl.
+        public static final double TRANSLATION_kP = 10;
+        public static final double TRANSLATION_kI = .5;
+        public static final double TRANSLATION_kD = 0;
+        public static final double TRANSLATION_TOLERANCE = 0.02;
+
+        public static final double ROTATION_kP = 3;
+        public static final double ROTATION_kI = 0;
+        public static final double ROTATION_kD = 0;
+        public static final double ROTATION_TOLERANCE = Units.degreesToRadians(2);
     }
 
     public static class VisionDownCam {
         public static final String CAMERA_NAME = "DownCam";
         // TU12 says that the Taiwan regional will use the AndyMark field
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
-        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.255,    0.175, 0.815),
+        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.255, 0.175, 0.815),
             new Rotation3d(Degrees.of(0), Degrees.of(30), Degrees.of(180)));
 
         public static class Simulated {
@@ -42,6 +55,7 @@ public class Constants {
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
         public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.265, 0.175, 0.895),
             new Rotation3d(Degrees.of(0), Degrees.of(-25), Degrees.of(180)));
+
 
         public static class Simulated {
             public static final int WIDTH = 1280;

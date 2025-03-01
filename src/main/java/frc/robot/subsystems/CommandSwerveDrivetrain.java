@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Constants;
+import frc.robot.command.DriveToPose;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -42,6 +43,7 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
+
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
@@ -209,27 +211,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         //     )
         // );
 
-        Translation2d currLocation = this.getState().Pose.getTranslation();
-        Rotation2d currToTargetAngle = Rotation2d.fromRadians(
-        Math.atan2(targetPose.getY() - currLocation.getY(), targetPose.getX() - currLocation.getX()));//算法
+        if (Constants.Drivetrain.USE_PPLIB_FOR_AUTOALIGN) {
+            // USE PPLib
+            Translation2d currLocation = this.getState().Pose.getTranslation();
+            Rotation2d currToTargetAngle = Rotation2d.fromRadians(Math.atan2(targetPose.getY() - currLocation.getY(), targetPose.getX() - currLocation.getX()));//算法
 
-        PathPlannerPath path = new PathPlannerPath(
-            PathPlannerPath.waypointsFromPoses(
-                new Pose2d(currLocation, currToTargetAngle),
-                new Pose2d(targetPose.getTranslation(), currToTargetAngle)
-            ),
-            Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS,
-            null,
-            new GoalEndState(0.0, targetPose.getRotation()));
-        path.preventFlipping = true;
-        
-        try {
-            path.generateTrajectory(new ChassisSpeeds(), currLocation.getAngle(), config);
-        } catch (Exception e) {
-            return this.runOnce(() -> {});
+            PathPlannerPath path = new PathPlannerPath(
+                PathPlannerPath.waypointsFromPoses(
+                    new Pose2d(currLocation, currToTargetAngle),
+                    new Pose2d(targetPose.getTranslation(), currToTargetAngle)
+                ),
+                Constants.Drivetrain.DRIVE_TO_POSE_CONSTRAINTS,
+                null,
+                new GoalEndState(0.0, targetPose.getRotation()));
+            path.preventFlipping = true;
+            
+            try {
+                path.generateTrajectory(new ChassisSpeeds(), currLocation.getAngle(), config);
+            } catch (Exception e) {
+                return this.runOnce(() -> {});
+            }
+
+            return AutoBuilder.followPath(path);
+        } else {
+            return new DriveToPose(this, targetPose);
         }
-
-        return AutoBuilder.followPath(path);
     }
 
     public static void setSelectedReef(Pose2d pose) {

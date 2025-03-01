@@ -71,7 +71,6 @@ public class AlgaePivot extends SubsystemBase {
         {  
             return kG;  
         } else 
-
         {
             return 0; // 其他位置不補償
         }

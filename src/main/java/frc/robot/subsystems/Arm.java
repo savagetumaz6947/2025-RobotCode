@@ -32,7 +32,7 @@ public class Arm extends SubsystemBase {
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0.9).withSlot(0);
 
     public enum ArmLocation {
-        INTAKE, OUTTAKE, OUT, UNDEFINED, DEFAULT, GROUND, ALGAE, TOP
+        INTAKE, UNDEFINED, DEFAULT, GROUND, TOP, ALGAE, SPIT
     }
 
     private Map<ArmLocation, Double> locationsMap = new HashMap<>();
@@ -42,9 +42,8 @@ public class Arm extends SubsystemBase {
     private static MechanismLigament2d mech2d;
 
     public Arm() {
-        
         Slot0Configs armSlot0Configs = new Slot0Configs();
-        armSlot0Configs.kP = 0.5;
+        armSlot0Configs.kP = 1.2;
         armSlot0Configs.kI = 0;
         armSlot0Configs.kD = 0.15;
         armSlot0Configs.kV = 0.25;
@@ -52,23 +51,23 @@ public class Arm extends SubsystemBase {
 
         
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 25; 
+        motionMagicConfigs.MotionMagicAcceleration = 80;
         motionMagicConfigs.MotionMagicCruiseVelocity = 125; 
-        motionMagicConfigs.MotionMagicJerk = 200;
+        motionMagicConfigs.MotionMagicJerk = 100;
 
         
         motor.getConfigurator().apply(armSlot0Configs);
         motor.getConfigurator().apply(motionMagicConfigs);
+
 
         motor.setPosition(0);
         motor.setNeutralMode(NeutralModeValue.Brake);
 
         locationsMap.put(ArmLocation.INTAKE, 17.5);
         locationsMap.put(ArmLocation.TOP, -25.0);
-        locationsMap.put(ArmLocation.OUTTAKE, -26.0);
-        locationsMap.put(ArmLocation.OUT, -10.0);
+        locationsMap.put(ArmLocation.SPIT, -45.0);
         locationsMap.put(ArmLocation.DEFAULT, 0.0);
-        locationsMap.put(ArmLocation.GROUND, -63.5);
+        locationsMap.put(ArmLocation.GROUND, -70.0);
         locationsMap.put(ArmLocation.ALGAE, -70.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());

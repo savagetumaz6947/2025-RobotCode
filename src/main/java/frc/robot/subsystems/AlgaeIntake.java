@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,7 +20,9 @@ public class AlgaeIntake extends SubsystemBase {
     private AlgaeIntakeState state = AlgaeIntakeState.DEFAULT;
 
     public AlgaeIntake (){
-        stateMap.put(AlgaeIntakeState.DEFAULT, 0.0);
+        motor.setNeutralMode(NeutralModeValue.Brake);
+
+        stateMap.put(AlgaeIntakeState.DEFAULT, -0.5);
         stateMap.put(AlgaeIntakeState.IN, -6.0);
         stateMap.put(AlgaeIntakeState.OUT, 12.0);
 

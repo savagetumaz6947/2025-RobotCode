@@ -15,6 +15,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,7 +26,7 @@ public class Intake extends SubsystemBase {
     private TalonFX motor = new TalonFX(27, "rio");
 
     public enum IntakeState {
-        IN, OUT, DEFAULT, TEST
+        ALGAEIN, IN, OUT, DEFAULT, TEST
     };
 
     private Map<IntakeState, Double> stateMap = new HashMap<>();
@@ -36,12 +37,13 @@ public class Intake extends SubsystemBase {
     private static MechanismLigament2d mech2d;
 
     public Intake() {
-        motor.getConfigurator().apply(new CurrentLimitsConfigs().withStatorCurrentLimit(10)
+        motor.getConfigurator().apply(new CurrentLimitsConfigs().withStatorCurrentLimit(20)
             .withStatorCurrentLimitEnable(true));
 
-        stateMap.put(IntakeState.DEFAULT, 0.35);
-        stateMap.put(IntakeState.IN, 2.0);
-        stateMap.put(IntakeState.OUT, -0.35);
+        stateMap.put(IntakeState.DEFAULT, 0.5);
+        stateMap.put(IntakeState.IN, 4.0);
+        stateMap.put(IntakeState.ALGAEIN, 12.0);
+        stateMap.put(IntakeState.OUT, -4.0);
         
         this.setDefaultCommand(this.set(IntakeState.DEFAULT).repeatedly());
 
@@ -84,6 +86,6 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        
+        SmartDashboard.putNumber("Intake/Motor/Current", motor.getStatorCurrent().getValueAsDouble());
     }
 }
