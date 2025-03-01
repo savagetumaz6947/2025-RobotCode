@@ -179,7 +179,7 @@ public class RobotContainer {
             )
         );
 
-        joystick.povDown().whileTrue(
+        joystick.a().whileTrue(
             Commands.parallel( 
                 elevator.set(ElevatorLocation.DOWNINTAKE),
                 arm.set(ArmLocation.GROUND),
@@ -187,7 +187,8 @@ public class RobotContainer {
                 pivot.set(PivotLocation.INTAKE)
             )
         );
-        joystick.povDown().toggleOnFalse(prepareCoralToLevel.apply(ElevatorLocation.BOTTOM));
+        
+        joystick.a().toggleOnFalse(prepareCoralToLevel.apply(ElevatorLocation.BOTTOM));
 
         joystick.x().onTrue(Commands.parallel(
             elevator.set(ElevatorLocation.BOTTOM),
@@ -214,6 +215,12 @@ public class RobotContainer {
             intake.eStop(),
             Commands.runOnce(() -> {}, drivetrain)
         ));
+
+        operator.y().onTrue(Commands.sequence(
+            pivot.set(PivotLocation.INTAKE),
+            arm.set(ArmLocation.DEFAULT),
+            elevator.set(ElevatorLocation.BOTTOM)
+        ));  
 
         operator.rightTrigger().whileTrue(Commands.parallel(
             algaeIntake.set(AlgaeIntakeState.IN).repeatedly(),
