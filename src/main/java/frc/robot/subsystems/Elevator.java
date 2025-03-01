@@ -27,8 +27,8 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
 public class Elevator extends SubsystemBase {
-    private TalonFX left = new TalonFX(1, "rio");
-    private TalonFX right = new TalonFX(2, "rio");
+    private TalonFX left = new TalonFX(25, "rio");
+    private TalonFX right = new TalonFX(26, "rio");
 
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 

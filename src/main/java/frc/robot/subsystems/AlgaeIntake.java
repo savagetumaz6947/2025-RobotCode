@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class AlgaeIntake extends SubsystemBase {
-    private TalonFX motor = new TalonFX(6, "rio");
+    private TalonFX motor = new TalonFX(21, "rio");
 
     public enum AlgaeIntakeState {
         DEFAULT, IN, OUT

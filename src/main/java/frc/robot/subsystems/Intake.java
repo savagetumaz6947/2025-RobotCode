@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 
 public class Intake extends SubsystemBase {
-    private TalonFX motor = new TalonFX(11, "rio");
+    private TalonFX motor = new TalonFX(27, "rio");
 
     public enum IntakeState {
         IN, OUT, DEFAULT, TEST

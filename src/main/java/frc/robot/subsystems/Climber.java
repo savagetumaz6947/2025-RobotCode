@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
-    private TalonFX motor = new TalonFX(7, "rio");
+    private TalonFX motor = new TalonFX(24, "rio");
 
     public Command setVoltageCommand(DoubleSupplier voltage) {
         return this.run(() -> motor.setVoltage(voltage.getAsDouble()));

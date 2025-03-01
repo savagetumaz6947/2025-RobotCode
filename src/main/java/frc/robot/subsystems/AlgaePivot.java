@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 //------------------------------------------------------------------------------------------------------------------------
 public class AlgaePivot extends SubsystemBase {
-    private TalonFX motor = new TalonFX(5, "rio");
+    private TalonFX motor = new TalonFX(22, "rio");
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(1).withSlot(0);
 //------------------------------------------------------------------------------------------------------------------------
     public enum AlgaePivotLocation {

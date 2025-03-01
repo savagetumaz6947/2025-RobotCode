@@ -30,7 +30,7 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
 public class Pivot extends SubsystemBase {
-    private TalonFX motor = new TalonFX(4, "rio");
+    private TalonFX motor = new TalonFX(28, "rio");
     final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(3.75).withSlot(0);
 
     public enum PivotLocation {

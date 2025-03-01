@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 
 public class Arm extends SubsystemBase {
-    private TalonFX motor = new TalonFX(3, "rio");
+    private TalonFX motor = new TalonFX(23, "rio");
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0.9).withSlot(0);
 
     public enum ArmLocation {
