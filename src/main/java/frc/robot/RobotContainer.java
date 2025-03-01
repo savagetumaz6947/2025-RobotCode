@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
@@ -40,6 +39,7 @@ import frc.robot.subsystems.AlgaePivot.AlgaePivotLocation;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.AlgaePivot;
 import frc.robot.subsystems.Pivot.PivotLocation;
+import frc.robot.utils.ExtendedController;
 import frc.robot.utils.ReefSelector;
 
 public class RobotContainer {
@@ -48,15 +48,14 @@ public class RobotContainer {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final SendableChooser<Command> autoChooser;
 
     // Defining joysticks
-    private final CommandXboxController joystick = new CommandXboxController(0);
-    private final CommandXboxController operator = new CommandXboxController(1);
+    private final ExtendedController joystick = new ExtendedController(0);
+    private final ExtendedController operator = new ExtendedController(1);
 
     // Defining simulation constants
     // BIG holds elevator and arm
@@ -142,11 +141,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(3));
 
         autoChooser = AutoBuilder.buildAutoChooser();
-
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         configureBindings();
-
 
         if (Robot.isSimulation()) {
             SmartDashboard.putData("Sim/BigMechanism", bigMech2d);
