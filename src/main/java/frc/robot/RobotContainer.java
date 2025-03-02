@@ -196,7 +196,7 @@ public class RobotContainer {
             speedSupplier = () -> MaxSpeed * 0.4;
         }));
         joystick.rightTrigger().onFalse(Commands.runOnce(() -> {
-            speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
+            speedSupplier = () -> MaxSpeed * 0.15; // default speed is 20% theoretical max speed
         }));
         
         joystick.rightBumper().onTrue(
