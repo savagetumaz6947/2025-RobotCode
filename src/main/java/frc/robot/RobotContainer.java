@@ -98,9 +98,11 @@ public class RobotContainer {
         Commands.parallel(
             arm.set(ArmLocation.INTAKE),
             Commands.sequence(
-                Commands.waitSeconds(0.5),
-                elevator.set(ElevatorLocation.BOTTOM),
-                pivot.set(PivotLocation.INTAKE)
+                Commands.waitSeconds(1),
+                Commands.parallel(
+                    elevator.set(ElevatorLocation.BOTTOM),
+                    pivot.set(PivotLocation.INTAKE)
+                )
             )
         )
     );
@@ -116,7 +118,7 @@ public class RobotContainer {
     );
 
     private Command toIntakePosition = Commands.parallel(
-        arm.set(ArmLocation.INTAKE),
+        arm.set(ArmLocation.DEFAULT),
         Commands.sequence(
             Commands.waitSeconds(0.5),
             elevator.set(ElevatorLocation.BOTTOM),
@@ -124,6 +126,10 @@ public class RobotContainer {
         )
     );
 
+    private Command getCoral = Commands.parallel(
+        arm.set(ArmLocation.INTAKE),
+        intake.set(IntakeState.IN).repeatedly().withTimeout(0.5)
+    );
 
     @Deprecated
     private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
@@ -165,7 +171,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("ReturnToIntakePosition", toIntakePosition);
 
-        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(0.5));
+        NamedCommands.registerCommand("GetCoral", getCoral);
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);

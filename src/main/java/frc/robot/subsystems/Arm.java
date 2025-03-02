@@ -63,7 +63,7 @@ public class Arm extends SubsystemBase {
         motor.setPosition(0);
         motor.setNeutralMode(NeutralModeValue.Brake);
 
-        locationsMap.put(ArmLocation.INTAKE, 20.5);
+        locationsMap.put(ArmLocation.INTAKE, 15.0);
         locationsMap.put(ArmLocation.TOP, -25.0);
         locationsMap.put(ArmLocation.SPIT, -45.0);
         locationsMap.put(ArmLocation.DEFAULT, 0.0);

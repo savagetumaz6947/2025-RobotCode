@@ -30,7 +30,7 @@ public class Constants {
             // Whether to use PPLib in the driveToPose() function.
             public static final boolean USE_PPLIB = false;
             // This constraint is used in the driveToPose() function by PPLib AND PIDControl.
-            public static final PathConstraints CONSTRAINTS = new PathConstraints(3, 2, 180,
+            public static final PathConstraints CONSTRAINTS = new PathConstraints(1.5, 2, 180,
                     240, 12, false);// 1.1.540.720
 
             // These constraints are solely used in the driveToPose() function by PIDControl.
