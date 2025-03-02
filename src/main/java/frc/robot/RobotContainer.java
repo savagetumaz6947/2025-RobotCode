@@ -104,6 +104,26 @@ public class RobotContainer {
             )
         )
     );
+    
+    private Command spit = Commands.sequence(
+        Commands.deadline(
+            arm.set(ArmLocation.SPIT),
+            Commands.sequence(
+                Commands.waitSeconds(0.5),
+                intake.set(IntakeState.OUT)
+            )
+        )
+    );
+
+    private Command toIntakePosition = Commands.parallel(
+        arm.set(ArmLocation.INTAKE),
+        Commands.sequence(
+            Commands.waitSeconds(0.5),
+            elevator.set(ElevatorLocation.BOTTOM),
+            pivot.set(PivotLocation.INTAKE)
+        )
+    );
+
 
     @Deprecated
     private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
@@ -126,19 +146,26 @@ public class RobotContainer {
     public RobotContainer() {
         // Build an auto chooser. This will use Commands.none() as the default option.
         NamedCommands.registerCommand("PutArmSafe", arm.set(ArmLocation.INTAKE));
+
         for (char r = 'A'; r <= 'L'; r++) {
             for (int i = 2; i <= 4; i++) {
                 final char fr = r;
                 final int fi = i;
                 NamedCommands.registerCommand("Put" + fr + i, Commands.sequence(
                     Commands.runOnce(() -> reefSelector.setReef(fr, fi)),
-                    Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
-                    Commands.defer(() -> putCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
+                    Commands.parallel(
+                        Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+                        Commands.defer(() -> prepareCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
+                    )
                 ));
             }
         }
 
-        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(3));
+        NamedCommands.registerCommand("Spit", spit);
+
+        NamedCommands.registerCommand("ReturnToIntakePosition", toIntakePosition);
+
+        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(0.5));
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);

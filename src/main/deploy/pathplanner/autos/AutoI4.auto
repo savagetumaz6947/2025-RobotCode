@@ -5,15 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "PutArmSafe"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ExitToJI"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "PutArmSafe"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "ExitToJI"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,9 +30,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "IJtoSource"
+            "name": "Spit"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "IJtoSource"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ReturnToIntakePosition"
+                }
+              }
+            ]
           }
         },
         {
@@ -38,6 +64,37 @@
           "type": "path",
           "data": {
             "pathName": "SourcetoLK"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PutL4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Spit"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LKtoSource"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ReturnToIntakePosition"
+                }
+              }
+            ]
           }
         }
       ]

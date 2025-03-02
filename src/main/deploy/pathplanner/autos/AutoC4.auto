@@ -5,15 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "PutArmSafe"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ExitToCD"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "PutArmSafe"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "ExitToCD"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,9 +30,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "CDtoSource"
+            "name": "Spit"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ReturnToIntakePosition"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CDtoSource"
+                }
+              }
+            ]
           }
         },
         {
