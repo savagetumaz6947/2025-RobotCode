@@ -51,8 +51,8 @@ public class Arm extends SubsystemBase {
 
         
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 80;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 125; 
+        motionMagicConfigs.MotionMagicAcceleration = 100;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 200; 
         motionMagicConfigs.MotionMagicJerk = 100;
 
         
@@ -65,7 +65,7 @@ public class Arm extends SubsystemBase {
 
         locationsMap.put(ArmLocation.INTAKE, 15.0);
         locationsMap.put(ArmLocation.TOP, -25.0);
-        locationsMap.put(ArmLocation.SPIT, -45.0);
+        locationsMap.put(ArmLocation.SPIT, -50.0);
         locationsMap.put(ArmLocation.DEFAULT, 0.0);
         locationsMap.put(ArmLocation.GROUND, -70.0);
         locationsMap.put(ArmLocation.ALGAE, -70.0);
@@ -86,7 +86,7 @@ public class Arm extends SubsystemBase {
         state = location;
         return this.run(() -> {
             motor.setControl(motionMagicRequest.withPosition(locationsMap.get(location)));
-        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 0.5));
+        }).until(() -> MathUtil.isNear(locationsMap.get(location), motor.getPosition().getValueAsDouble(), 2));
     }
 
     public ArmLocation getState() {

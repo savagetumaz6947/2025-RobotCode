@@ -98,11 +98,9 @@ public class RobotContainer {
         Commands.parallel(
             arm.set(ArmLocation.INTAKE),
             Commands.sequence(
-                Commands.waitSeconds(1),
-                Commands.parallel(
-                    elevator.set(ElevatorLocation.BOTTOM),
-                    pivot.set(PivotLocation.INTAKE)
-                )
+                Commands.waitSeconds(0.5),
+                elevator.set(ElevatorLocation.BOTTOM),
+                pivot.set(PivotLocation.INTAKE)
             )
         )
     );
@@ -118,7 +116,7 @@ public class RobotContainer {
     );
 
     private Command toIntakePosition = Commands.parallel(
-        arm.set(ArmLocation.DEFAULT),
+        arm.set(ArmLocation.INTAKE),
         Commands.sequence(
             Commands.waitSeconds(0.5),
             elevator.set(ElevatorLocation.BOTTOM),
@@ -126,10 +124,6 @@ public class RobotContainer {
         )
     );
 
-    private Command getCoral = Commands.parallel(
-        arm.set(ArmLocation.INTAKE),
-        intake.set(IntakeState.IN).repeatedly().withTimeout(0.5)
-    );
 
     @Deprecated
     private Function<ElevatorLocation, Command> putCoralToLevel = (location) -> {
@@ -160,7 +154,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Put" + fr + i, Commands.sequence(
                     Commands.runOnce(() -> reefSelector.setReef(fr, fi)),
                     Commands.parallel(
-                        Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+                        //Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
                         Commands.defer(() -> prepareCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
                     )
                 ));
@@ -171,7 +165,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("ReturnToIntakePosition", toIntakePosition);
 
-        NamedCommands.registerCommand("GetCoral", getCoral);
+        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(0.5));
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -202,7 +196,7 @@ public class RobotContainer {
             speedSupplier = () -> MaxSpeed * 0.4;
         }));
         joystick.rightTrigger().onFalse(Commands.runOnce(() -> {
-            speedSupplier = () -> MaxSpeed * 0.15; // default speed is 20% theoretical max speed
+            speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
         }));
         
         joystick.rightBumper().onTrue(

@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class ExtendedController extends CommandXboxController {
-    double deadband = 0.0;
+    double deadband = 0.1;
 
     public ExtendedController(int port) {
         super(port);

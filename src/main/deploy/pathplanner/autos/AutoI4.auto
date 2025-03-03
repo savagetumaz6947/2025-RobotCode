@@ -69,32 +69,13 @@
         {
           "type": "named",
           "data": {
-            "name": "PutL4"
+            "name": "PutK4"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Spit"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "LKtoSource"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ReturnToIntakePosition"
-                }
-              }
-            ]
           }
         }
       ]
