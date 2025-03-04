@@ -31,7 +31,7 @@ public class ReefSelector {
         this.selectedPose = aprilTagPose.rotateAround(aprilTagPose.getTranslation(), Rotation2d.fromDegrees(180))
         // this.selectedPose = aprilTagPose
             .plus(new Transform2d(Constants.ReefSelector.X_OFFSET,
-                (this.selectedReef - 1) % 2 == 0 ? Constants.ReefSelector.Y_OFFSET : Constants.ReefSelector.Y_OFFSET.unaryMinus(),
+                (this.selectedReef - 1) % 2 == 0 ? Constants.ReefSelector.LEFT_Y_OFFSET : Constants.ReefSelector.RIGHT_Y_OFFSET,
                 Rotation2d.fromDegrees(180)));
 
         CommandSwerveDrivetrain.setSelectedReef(this.selectedPose);

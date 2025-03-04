@@ -27,6 +27,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Arm.ArmLocation;
+import frc.robot.subsystems.Climber.ClimberLocation;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorLocation;
@@ -155,8 +156,8 @@ public class RobotContainer {
                 final int fi = i;
                 NamedCommands.registerCommand("Put" + fr + i, Commands.sequence(
                     Commands.runOnce(() -> reefSelector.setReef(fr, fi)),
-                    Commands.parallel(
-                        //Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+                    Commands.sequence(
+                        Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
                         Commands.defer(() -> prepareCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
                     )
                 ));
@@ -262,11 +263,18 @@ public class RobotContainer {
 
         operator.b().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(0.6));
 
-        operator.rightBumper().onTrue(Commands.sequence(
+        /* operator.rightBumper().onTrue(Commands.sequence(
             elevator.set(ElevatorLocation.ALGAE),
             arm.set(ArmLocation.ALGAE),
 
             intake.set(IntakeState.OUT)
+        )); */
+
+        operator.rightBumper().onTrue(Commands.parallel(
+            arm.set(ArmLocation.GROUND),
+            algaePivot.set(AlgaePivotLocation.INTAKE),
+            elevator.set(ElevatorLocation.BOTTOM),
+            climber.set(ClimberLocation.OUT)
         ));
 
         operator.povUp().onTrue(Commands.runOnce(() -> reefSelector.goUp()));

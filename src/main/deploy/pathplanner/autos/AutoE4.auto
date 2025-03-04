@@ -5,15 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "PutArmSafe"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ExitToEF"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "ExitToEF"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "PutArmSafe"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,9 +30,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "EFtoSource"
+            "name": "Spit"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "EFtoSource"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ReturnToIntakePosition"
+                }
+              }
+            ]
           }
         },
         {
@@ -38,6 +64,18 @@
           "type": "path",
           "data": {
             "pathName": "SourceToCD"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PutC4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Spit"
           }
         }
       ]
