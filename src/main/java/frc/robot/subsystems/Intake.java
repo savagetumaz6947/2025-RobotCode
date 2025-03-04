@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.subsystems.TubeLed.LedMode;
 
 public class Intake extends SubsystemBase {
     private SparkMax motor = new SparkMax(51, MotorType.kBrushless);
@@ -89,6 +90,10 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        
+        if (motor.getAppliedOutput() > .3) {
+            TubeLed.setMode(LedMode.FLASH);
+        } else {
+            TubeLed.setMode(LedMode.ON);
+        }
     }
 }

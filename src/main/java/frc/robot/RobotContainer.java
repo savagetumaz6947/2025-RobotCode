@@ -34,6 +34,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LedStrip;
 import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.TubeLed;
 import frc.robot.subsystems.AlgaeIntake.AlgaeIntakeState;
 import frc.robot.subsystems.AlgaePivot.AlgaePivotLocation;
 import frc.robot.subsystems.AlgaeIntake;
@@ -74,6 +75,7 @@ public class RobotContainer {
     private final AlgaeIntake algaeIntake = new AlgaeIntake();
     private final AlgaePivot algaePivot = new AlgaePivot();
     private final LedStrip ledStrip = new LedStrip(() -> elevator.getHeight());
+    private final TubeLed tubeLed = new TubeLed();
     private final Climber climber = new Climber();
 
     private final ReefSelector reefSelector = new ReefSelector();
