@@ -30,25 +30,32 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Spit"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "EFtoSource"
+                  "name": "SPIT"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "ReturnToIntakePosition"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.3
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "EFtoSource"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -75,7 +82,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Spit"
+            "name": "SPIT"
           }
         }
       ]

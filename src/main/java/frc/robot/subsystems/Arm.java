@@ -51,9 +51,9 @@ public class Arm extends SubsystemBase {
 
         
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 100;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 200; 
-        motionMagicConfigs.MotionMagicJerk = 100;
+        motionMagicConfigs.MotionMagicAcceleration = 200;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 250; 
+        motionMagicConfigs.MotionMagicJerk = 150;
 
         
         motor.getConfigurator().apply(armSlot0Configs);
@@ -64,10 +64,10 @@ public class Arm extends SubsystemBase {
         motor.setNeutralMode(NeutralModeValue.Brake);
 
         locationsMap.put(ArmLocation.INTAKE, 15.0);
-        locationsMap.put(ArmLocation.TOP, -25.0);
+        locationsMap.put(ArmLocation.TOP, -29.0);
         locationsMap.put(ArmLocation.SPIT, -50.0);
         locationsMap.put(ArmLocation.DEFAULT, 0.0);
-        locationsMap.put(ArmLocation.GROUND, -70.0);
+        locationsMap.put(ArmLocation.GROUND, -72.0);
         locationsMap.put(ArmLocation.ALGAE, -70.0);
 
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());

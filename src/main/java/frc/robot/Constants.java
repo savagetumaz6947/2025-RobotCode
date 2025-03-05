@@ -81,10 +81,10 @@ public class Constants {
     public static class ReefSelector {
         // Apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.
         // X_OFFSET should always be negative (away from the tag).
-        public static final Distance X_OFFSET = Meters.of(-0.68);
+        public static final Distance X_OFFSET = Meters.of(-0.55);
         // LEFT_Y_OFFSET is assumed to be positive (LEFT reef). The reason for this is that A1, the default scoring location, is on the left.
-        public static final Distance LEFT_Y_OFFSET = Meters.of(0.12);
-        public static final Distance RIGHT_Y_OFFSET = Meters.of(-0.12);
+        public static final Distance LEFT_Y_OFFSET = Meters.of(0.17);
+        public static final Distance RIGHT_Y_OFFSET = Meters.of(-0.16);
 
         // These are the AprilTag IDs of the desired scoring locations.
         // A-B shares one AprilTag, C-D shares one AprilTag, and so on.

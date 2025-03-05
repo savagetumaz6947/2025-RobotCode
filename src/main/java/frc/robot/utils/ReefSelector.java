@@ -46,6 +46,10 @@ public class ReefSelector {
         return Constants.ReefSelector.ELEVATOR_LOCATIONS[selectedLevel];
     }
 
+    public ElevatorLocation getElevatorSpitLocation() {
+        return Constants.ReefSelector.ELEVATOR_LOCATIONS[selectedLevel-1];
+    }
+
     public void goRight() {
         this.selectedReef = (char)(this.selectedReef + 1) > 'L' ? 'A' : (char)(this.selectedReef + 1);
         calculatePose();

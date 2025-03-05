@@ -89,20 +89,15 @@ public class RobotContainer {
     };
 
     private Command spitCoral = Commands.sequence(
-        Commands.deadline(
-            Commands.waitSeconds(1),
-            arm.set(ArmLocation.SPIT),
-            Commands.sequence(
-                Commands.waitSeconds(0.5),
-                intake.set(IntakeState.OUT)
-            )
-        ),
         Commands.parallel(
-            arm.set(ArmLocation.INTAKE),
+            elevator.set(ElevatorLocation.BOTTOM),
+            intake.set(IntakeState.OUT),
             Commands.sequence(
                 Commands.waitSeconds(0.5),
-                elevator.set(ElevatorLocation.BOTTOM),
-                pivot.set(PivotLocation.INTAKE)
+                Commands.parallel(
+                    arm.set(ArmLocation.INTAKE),
+                    pivot.set(PivotLocation.INTAKE)
+                )
             )
         )
     );
@@ -155,7 +150,7 @@ public class RobotContainer {
                 final int fi = i;
                 NamedCommands.registerCommand("Put" + fr + i, Commands.sequence(
                     Commands.runOnce(() -> reefSelector.setReef(fr, fi)),
-                    Commands.sequence(
+                    Commands.parallel(
                         Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
                         Commands.defer(() -> prepareCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
                     )
@@ -163,11 +158,11 @@ public class RobotContainer {
             }
         }
 
-        NamedCommands.registerCommand("Spit", spit);
+        NamedCommands.registerCommand("SPIT", spitCoral);
 
         NamedCommands.registerCommand("ReturnToIntakePosition", toIntakePosition);
 
-        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(0.5));
+        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(1));
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
