@@ -27,7 +27,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Arm.ArmLocation;
-import frc.robot.subsystems.Climber.ClimberLocation;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Elevator.ElevatorLocation;
@@ -273,8 +272,7 @@ public class RobotContainer {
         operator.rightBumper().onTrue(Commands.parallel(
             arm.set(ArmLocation.GROUND),
             algaePivot.set(AlgaePivotLocation.INTAKE),
-            elevator.set(ElevatorLocation.BOTTOM),
-            climber.set(ClimberLocation.OUT)
+            elevator.set(ElevatorLocation.BOTTOM)
         ));
 
         operator.povUp().onTrue(Commands.runOnce(() -> reefSelector.goUp()));
