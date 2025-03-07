@@ -16,17 +16,20 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -314,13 +317,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             visionDownEst.ifPresent(
                 est -> {
                     // Hours wasted because CTRE decided to use FPGA Time: 5
-                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
+                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
+                        est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
+                    ), VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(60)));
             });
         if (RobotState.isDisabled()) {
             visionUpEst.ifPresent(
                 est -> {
                     // Hours wasted because CTRE decided to use FPGA Time: 5
-                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(est.timestampSeconds));
+                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
+                        est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
+                    ), VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(60)));
             });
         }
 

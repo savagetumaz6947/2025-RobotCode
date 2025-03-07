@@ -13,10 +13,12 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -50,6 +52,8 @@ public class RobotContainer {
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    private final SwerveRequest.ApplyRobotSpeeds driveRobotCentric = new SwerveRequest.ApplyRobotSpeeds()
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final SendableChooser<Command> autoChooser;
@@ -187,6 +191,37 @@ public class RobotContainer {
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+        // joystick.menu().whileTrue(
+        //     drivetrain.applyRequest(() ->
+        //         driveRobotCentric.withSpeeds(new ChassisSpeeds(
+        //             joystick.getLeftY() * speedSupplier.getAsDouble(),
+        //             joystick.getLeftX() * speedSupplier.getAsDouble(),
+        //             -joystick.getRightX() * MaxAngularRate
+        //         ))
+        //     )
+        // );
+        // joystick.povUp().whileTrue(() -> drivetrain.);
+        joystick.povUp().whileTrue(drivetrain.applyRequest(() -> driveRobotCentric.withSpeeds(new ChassisSpeeds(
+            Constants.Drivetrain.JOYSTICK_POV_VELOCITY.unaryMinus().in(MetersPerSecond),
+            0,
+            0
+        ))));
+        joystick.povDown().whileTrue(drivetrain.applyRequest(() -> driveRobotCentric.withSpeeds(new ChassisSpeeds(
+            Constants.Drivetrain.JOYSTICK_POV_VELOCITY.in(MetersPerSecond),
+            0,
+            0
+        ))));
+        joystick.povLeft().whileTrue(drivetrain.applyRequest(() -> driveRobotCentric.withSpeeds(new ChassisSpeeds(
+            0,
+            Constants.Drivetrain.JOYSTICK_POV_VELOCITY.unaryMinus().in(MetersPerSecond),
+            0
+        ))));
+        joystick.povRight().whileTrue(drivetrain.applyRequest(() -> driveRobotCentric.withSpeeds(new ChassisSpeeds(
+            0,
+            Constants.Drivetrain.JOYSTICK_POV_VELOCITY.in(MetersPerSecond),
+            0
+        ))));
+
         climber.setDefaultCommand(climber.setVoltageCommand(() -> operator.getRightY()));
 
         joystick.rightTrigger().onTrue(Commands.runOnce(() -> {
@@ -223,7 +258,8 @@ public class RobotContainer {
 
         // joystick.a().onTrue(putCoralToLevel.apply(ElevatorLocation.BOTTOM));
         // joystick.b().onTrue(putCoralToLevel.apply(ElevatorLocation.MID));
-        // joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
+        //joystick.povUp().onTrue(putCoralToLevel.apply(ElevatorLocation.TOP));
+        
         joystick.b().onTrue(spitCoral);
 
         joystick.y().onTrue(Commands.sequence(

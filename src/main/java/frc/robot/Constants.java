@@ -2,6 +2,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -15,10 +16,13 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.subsystems.Elevator.ElevatorLocation;
 
 public class Constants {
     public static class Drivetrain {
+        public static final LinearVelocity JOYSTICK_POV_VELOCITY = MetersPerSecond.of(0.2);
+
         public static final PPHolonomicDriveController PP_HOLONOMIC_DRIVE_CONTROLLER = new PPHolonomicDriveController(
             // PPHolonomicController is the built in path following controller for holonomic drive trains.
             // This does not affect DriveToPose.

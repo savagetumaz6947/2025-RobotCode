@@ -82,23 +82,23 @@ public class ExtendedController extends CommandXboxController {
 
     // To construct new button triggers, use the example below. You can then use the button as normal.
 
-    // /**
-    //  * Constructs a Trigger instance around the BackRight (13) button's digital signal.
-    //  */
-    // public Trigger backRight() {
-    //     return backRight(CommandScheduler.getInstance().getDefaultButtonLoop());
-    // }
+    /**
+     * Constructs a Trigger instance around the BackRight (13) button's digital signal.
+     */
+    public Trigger menu() {
+        return menu(CommandScheduler.getInstance().getDefaultButtonLoop());
+    }
 
-    // /**
-    //  * Constructs a Trigger instance around the BackRight (13) button's digital signal.
-    //  *
-    //  * @param loop the event loop instance to attach the event to.
-    //  * @return a Trigger instance representing the A button's digital signal attached
-    //  *     to the given loop.
-    //  */
-    // public Trigger backRight(EventLoop loop) {
-    //     // Put the button ID here.
-    //     return button(13, loop);
-    // }
+    /**
+     * Constructs a Trigger instance around the BackRight (13) button's digital signal.
+     *
+     * @param loop the event loop instance to attach the event to.
+     * @return a Trigger instance representing the A button's digital signal attached
+     *     to the given loop.
+     */
+    public Trigger menu(EventLoop loop) {
+        // Put the button ID here.
+        return button(8, loop);
+    }
 
 }
