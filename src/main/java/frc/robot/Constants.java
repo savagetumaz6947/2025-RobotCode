@@ -22,27 +22,27 @@ public class Constants {
         public static final PPHolonomicDriveController PP_HOLONOMIC_DRIVE_CONTROLLER = new PPHolonomicDriveController(
             // PPHolonomicController is the built in path following controller for holonomic drive trains.
             // This does not affect DriveToPose.
-            new PIDConstants(3.5, 0.0, 0.01), // Translation PID constants500
-            new PIDConstants(3.0, 0.0, 0.01) // Rotation PID constants500
+            new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants500
+            new PIDConstants(2.8, 0.0, 0.0) // Rotation PID constants500
         );
 
         public static class DriveToPose {
             // Whether to use PPLib in the driveToPose() function.
             public static final boolean USE_PPLIB = false;
             // This constraint is used in the driveToPose() function by PPLib AND PIDControl.
-            public static final PathConstraints CONSTRAINTS = new PathConstraints(2, 2.5, 150,
-                    210, 12, false);// 1.1.540.720
+            public static final PathConstraints CONSTRAINTS = new PathConstraints(1.5, 1.5, 180,
+                    240, 12, false);// 1.1.540.720
 
             // These constraints are solely used in the driveToPose() function by PIDControl.
-            public static final double TRANSLATION_kP = 2.5;//10
+            public static final double TRANSLATION_kP = 5.0;//10
             public static final double TRANSLATION_kI = 0.0;//.5
             public static final double TRANSLATION_kD = 0.0;//0
-            public static final double TRANSLATION_TOLERANCE = 0.07;//0.02
+            public static final double TRANSLATION_TOLERANCE = 0.01;//0.02
 
             public static final double ROTATION_kP = 2.5;//3
             public static final double ROTATION_kI = 0.0;
-            public static final double ROTATION_kD = 0.05;//0
-            public static final double ROTATION_TOLERANCE = Units.degreesToRadians(3.5);//2
+            public static final double ROTATION_kD = 0.0;//0
+            public static final double ROTATION_TOLERANCE = Units.degreesToRadians(2.0);//2
         }
     }
 
@@ -81,10 +81,10 @@ public class Constants {
     public static class ReefSelector {
         // Apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.
         // X_OFFSET should always be negative (away from the tag).
-        public static final Distance X_OFFSET = Meters.of(-0.55);
+        public static Distance X_OFFSET = Meters.of(-0.48);
         // LEFT_Y_OFFSET is assumed to be positive (LEFT reef). The reason for this is that A1, the default scoring location, is on the left.
-        public static final Distance LEFT_Y_OFFSET = Meters.of(0.17);
-        public static final Distance RIGHT_Y_OFFSET = Meters.of(-0.16);
+        public static Distance LEFT_Y_OFFSET = Meters.of(0.19);
+        public static Distance RIGHT_Y_OFFSET = Meters.of(-0.25);
 
         // These are the AprilTag IDs of the desired scoring locations.
         // A-B shares one AprilTag, C-D shares one AprilTag, and so on.

@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
@@ -70,7 +72,7 @@ public class Elevator extends SubsystemBase {
 
         locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
         locationsMap.put(ElevatorLocation.MID, 13.5);
-        locationsMap.put(ElevatorLocation.TOP, 30.0);
+        locationsMap.put(ElevatorLocation.TOP, 31.0);
         locationsMap.put(ElevatorLocation.ALGAE, 20.0);
         locationsMap.put(ElevatorLocation.SOURCE, 6.0);
         locationsMap.put(ElevatorLocation.DOWNINTAKE, 5.0);
@@ -78,6 +80,10 @@ public class Elevator extends SubsystemBase {
         this.setDefaultCommand(this.set(() -> 0.0).repeatedly());
 
         if (Robot.isSimulation()) configureSimulation();
+
+        SmartDashboard.putNumber("X_OFFSET", Constants.ReefSelector.X_OFFSET.in(Meters));
+        SmartDashboard.putNumber("LEFT_Y_OFFSET", Constants.ReefSelector.LEFT_Y_OFFSET.in(Meters));
+        SmartDashboard.putNumber("RIGHT_Y_OFFSET", Constants.ReefSelector.RIGHT_Y_OFFSET.in(Meters));
     }
 
     public Command set(DoubleSupplier voltage){
@@ -148,5 +154,9 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putNumber("Elevator/Left/MotorVoltage", left.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Elevator/Left/MotorCurrent", left.getSupplyCurrent().getValueAsDouble());
         SmartDashboard.putNumber("Elevator/Left/MotorTemperature", left.getDeviceTemp().getValueAsDouble());
+
+        Constants.ReefSelector.X_OFFSET = Meters.of(SmartDashboard.getNumber("X_OFFSET", Constants.ReefSelector.X_OFFSET.in(Meters)));
+        Constants.ReefSelector.LEFT_Y_OFFSET = Meters.of(SmartDashboard.getNumber("LEFT_Y_OFFSET", Constants.ReefSelector.LEFT_Y_OFFSET.in(Meters)));
+        Constants.ReefSelector.RIGHT_Y_OFFSET = Meters.of(SmartDashboard.getNumber("RIGHT_Y_OFFSET", Constants.ReefSelector.RIGHT_Y_OFFSET.in(Meters)));
     }
 }
