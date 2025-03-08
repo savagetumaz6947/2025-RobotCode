@@ -15,7 +15,7 @@ public class ReefSelector {
     private char selectedReef = 'A';
     private int selectedLevel = 2;
     private Pose2d selectedPose = new Pose2d();
-    private Pose2d selectedAutoPose = new Pose2d();
+    //private Pose2d selectedAutoPose = new Pose2d();
 
     public ReefSelector() {
         calculatePose();
@@ -38,8 +38,8 @@ public class ReefSelector {
         CommandSwerveDrivetrain.setSelectedReef(this.selectedPose);
         SmartDashboard.putString("ReefSelector/Selected", "" + this.selectedReef + this.selectedLevel);
     }
-    //autoPose
-    private void calculateAutoPose() {
+    //aut
+    /*private void calculateAutoPose() {
         Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
 
         // Capital A has the ASCII code 65. int 65/2 = 32.
@@ -55,15 +55,15 @@ public class ReefSelector {
 
         CommandSwerveDrivetrain.setSelectedReef(this.selectedPose);
         SmartDashboard.putString("ReefSelector/Selected", "" + this.selectedReef + this.selectedLevel);
-    }
+    }*/
 
     public Pose2d getSelectedPose() {
         return selectedPose;
     }
 
-    public Pose2d getAutoSelectedPose(){
+    /*public Pose2d getAutoSelectedPose(){
         return selectedAutoPose;
-    }
+    }*/
 
     public ElevatorLocation getElevatorLocation() {
         return Constants.ReefSelector.ELEVATOR_LOCATIONS[selectedLevel];
