@@ -15,6 +15,7 @@ public class ReefSelector {
     private char selectedReef = 'A';
     private int selectedLevel = 2;
     private Pose2d selectedPose = new Pose2d();
+    private Pose2d selectedAutoPose = new Pose2d();
 
     public ReefSelector() {
         calculatePose();
@@ -38,8 +39,30 @@ public class ReefSelector {
         SmartDashboard.putString("ReefSelector/Selected", "" + this.selectedReef + this.selectedLevel);
     }
 
+    private void calculateAutoPose() {
+        Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+        // Capital A has the ASCII code 65. int 65/2 = 32.
+        Pose2d aprilTagPose = alliance == Alliance.Red ?
+            Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.RED_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d() :
+            Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.BLUE_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d();
+
+        this.selectedAutoPose = aprilTagPose.rotateAround(aprilTagPose.getTranslation(), Rotation2d.fromDegrees(180))
+        // this.selectedPose = aprilTagPose
+            .plus(new Transform2d(Constants.ReefSelector.AUTO_X_OFFSET,
+                (this.selectedReef - 1) % 2 == 0 ? Constants.ReefSelector.LEFT_Y_OFFSET : Constants.ReefSelector.RIGHT_Y_OFFSET,
+                Rotation2d.fromDegrees(180)));
+
+        CommandSwerveDrivetrain.setSelectedReef(this.selectedPose);
+        SmartDashboard.putString("ReefSelector/Selected", "" + this.selectedReef + this.selectedLevel);
+    }
+
     public Pose2d getSelectedPose() {
         return selectedPose;
+    }
+
+    public Pose2d getAutoSelectedPose(){
+        return selectedAutoPose;
     }
 
     public ElevatorLocation getElevatorLocation() {

@@ -155,7 +155,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Put" + fr + i, Commands.sequence(
                     Commands.runOnce(() -> reefSelector.setReef(fr, fi)),
                     Commands.parallel(
-                        Commands.defer(() -> drivetrain.driveToPose(reefSelector.getSelectedPose()), Set.of(drivetrain)),
+                        Commands.defer(() -> drivetrain.driveToPose(reefSelector.getAutoSelectedPose()), Set.of(drivetrain)),
                         Commands.defer(() -> prepareCoralToLevel.apply(reefSelector.getElevatorLocation()), Set.of(elevator, arm, pivot, intake))
                     )
                 ));
