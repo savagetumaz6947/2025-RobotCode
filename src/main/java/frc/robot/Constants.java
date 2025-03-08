@@ -35,12 +35,12 @@ public class Constants {
             public static final boolean USE_PPLIB = false;
             // This constraint is used in the driveToPose() function by PPLib AND PIDControl.
             public static final PathConstraints CONSTRAINTS = new PathConstraints(1.5, 1.5, 180,
-                    240, 12, false);// 1.1.540.720
+                    240, 12, false);// 2.2
 
             // These constraints are solely used in the driveToPose() function by PIDControl.
             public static final double TRANSLATION_kP = 5.0;//10
             public static final double TRANSLATION_kI = 0.0;//.5
-            public static final double TRANSLATION_kD = 0.0;//0
+            public static final double TRANSLATION_kD = 0.0;//0ㄌ
             public static final double TRANSLATION_TOLERANCE = 0.01;//0.02
 
             public static final double ROTATION_kP = 2.5;//3
@@ -85,10 +85,10 @@ public class Constants {
     public static class ReefSelector {
         // Apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.
         // X_OFFSET should always be negative (away from the tag).
-        public static Distance X_OFFSET = Meters.of(-0.48);
+        public static Distance X_OFFSET = Meters.of(-0.51);//55
         // LEFT_Y_OFFSET is assumed to be positive (LEFT reef). The reason for this is that A1, the default scoring location, is on the left.
-        public static Distance LEFT_Y_OFFSET = Meters.of(0.19);
-        public static Distance RIGHT_Y_OFFSET = Meters.of(-0.25);
+        public static Distance LEFT_Y_OFFSET = Meters.of(0.16);//17
+        public static Distance RIGHT_Y_OFFSET = Meters.of(-0.21);//-16
 
         // These are the AprilTag IDs of the desired scoring locations.
         // A-B shares one AprilTag, C-D shares one AprilTag, and so on.

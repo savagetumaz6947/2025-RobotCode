@@ -301,7 +301,8 @@ public class RobotContainer {
         )); */
 
         operator.rightBumper().onTrue(Commands.parallel(
-            arm.set(ArmLocation.GROUND),
+            arm.set(ArmLocation.CLIMB),
+            pivot.set(PivotLocation.INTAKE),
             algaePivot.set(AlgaePivotLocation.INTAKE),
             elevator.set(ElevatorLocation.BOTTOM)
         ));

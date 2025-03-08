@@ -319,7 +319,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     // Hours wasted because CTRE decided to use FPGA Time: 5
                     this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
                         est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
-                    ), VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(60)));
+                    ), VecBuilder.fill(0.1, 0.1, 0.9));
             });
         if (RobotState.isDisabled()) {
             visionUpEst.ifPresent(
@@ -327,7 +327,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     // Hours wasted because CTRE decided to use FPGA Time: 5
                     this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
                         est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
-                    ), VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(60)));
+                    ), VecBuilder.fill(0.1, 0.1, 0.9));
             });
         }
 
