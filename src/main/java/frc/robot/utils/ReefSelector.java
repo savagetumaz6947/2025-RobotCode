@@ -38,7 +38,7 @@ public class ReefSelector {
         CommandSwerveDrivetrain.setSelectedReef(this.selectedPose);
         SmartDashboard.putString("ReefSelector/Selected", "" + this.selectedReef + this.selectedLevel);
     }
-
+    //autoPose
     private void calculateAutoPose() {
         Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
 
