@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -50,11 +49,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private RobotConfig config;
 
-    private ExtendedPhotonCamera visionDown = new ExtendedPhotonCamera(Constants.VisionDownCam.CAMERA_NAME, Constants.VisionDownCam.ROBOT_TO_CAM, Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT);
+    private ExtendedPhotonCamera visionDown1 = new ExtendedPhotonCamera(Constants.VisionDown1Cam.CAMERA_NAME, Constants.VisionDown1Cam.ROBOT_TO_CAM, Constants.VisionDown1Cam.APRIL_TAG_FIELD_LAYOUT);
+    private ExtendedPhotonCamera visionDown2 = new ExtendedPhotonCamera(Constants.VisionDown2Cam.CAMERA_NAME, Constants.VisionDown2Cam.ROBOT_TO_CAM, Constants.VisionDown2Cam.APRIL_TAG_FIELD_LAYOUT);
     private ExtendedPhotonCamera visionUp = new ExtendedPhotonCamera(Constants.VisionUpCam.CAMERA_NAME, Constants.VisionUpCam.ROBOT_TO_CAM, Constants.VisionUpCam.APRIL_TAG_FIELD_LAYOUT);
 
     private VisionSystemSim visionSim;
-    private PhotonCameraSim cameraDownSim;
+    private PhotonCameraSim cameraDown1Sim;
+    private PhotonCameraSim cameraDown2Sim;
     private PhotonCameraSim cameraUpSim;
 
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
@@ -255,21 +256,34 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // Setup PhotonVision Simulation
         visionSim = new VisionSystemSim("main");
-        visionSim.addAprilTags(Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT);
+        visionSim.addAprilTags(Constants.VisionDown1Cam.APRIL_TAG_FIELD_LAYOUT);
 
-        SimCameraProperties cameraDownProperties = new SimCameraProperties();
-        cameraDownProperties.setCalibration(Constants.VisionDownCam.Simulated.WIDTH, Constants.VisionDownCam.Simulated.HEIGHT, Constants.VisionDownCam.Simulated.FOV);
-        cameraDownProperties.setCalibError(0.01, 0.08);
-        cameraDownProperties.setFPS(Constants.VisionDownCam.Simulated.FPS);
-        cameraDownProperties.setAvgLatencyMs(35);
-        cameraDownProperties.setLatencyStdDevMs(5);
-        cameraDownSim = new PhotonCameraSim(visionDown.getCamera(), cameraDownProperties);
+        SimCameraProperties cameraDown1Properties = new SimCameraProperties();
+        cameraDown1Properties.setCalibration(Constants.VisionDown1Cam.Simulated.WIDTH, Constants.VisionDown1Cam.Simulated.HEIGHT, Constants.VisionDown1Cam.Simulated.FOV);
+        cameraDown1Properties.setCalibError(0.01, 0.08);
+        cameraDown1Properties.setFPS(Constants.VisionDown1Cam.Simulated.FPS);
+        cameraDown1Properties.setAvgLatencyMs(35);
+        cameraDown1Properties.setLatencyStdDevMs(5);
+        cameraDown1Sim = new PhotonCameraSim(visionDown1.getCamera(), cameraDown1Properties);
 
-        cameraDownSim.enableRawStream(true);
-        cameraDownSim.enableProcessedStream(true);
-        cameraDownSim.enableDrawWireframe(true);
+        cameraDown1Sim.enableRawStream(true);
+        cameraDown1Sim.enableProcessedStream(true);
+        cameraDown1Sim.enableDrawWireframe(true);
 
-        visionSim.addCamera(cameraDownSim, Constants.VisionDownCam.ROBOT_TO_CAM);
+        SimCameraProperties cameraDown2Properties = new SimCameraProperties();
+        cameraDown2Properties.setCalibration(Constants.VisionDown2Cam.Simulated.WIDTH, Constants.VisionDown2Cam.Simulated.HEIGHT, Constants.VisionDown2Cam.Simulated.FOV);
+        cameraDown2Properties.setCalibError(0.01, 0.08);
+        cameraDown2Properties.setFPS(Constants.VisionDown2Cam.Simulated.FPS);
+        cameraDown2Properties.setAvgLatencyMs(35);
+        cameraDown2Properties.setLatencyStdDevMs(5);
+        cameraDown2Sim = new PhotonCameraSim(visionDown2.getCamera(), cameraDown2Properties);
+
+        cameraDown2Sim.enableRawStream(true);
+        cameraDown2Sim.enableProcessedStream(true);
+        cameraDown2Sim.enableDrawWireframe(true);
+
+        visionSim.addCamera(cameraDown1Sim, Constants.VisionDown1Cam.ROBOT_TO_CAM);
+        visionSim.addCamera(cameraDown2Sim, Constants.VisionDown2Cam.ROBOT_TO_CAM);
 
         SimCameraProperties cameraUpProperties = new SimCameraProperties();
         cameraUpProperties.setCalibration(Constants.VisionUpCam.Simulated.WIDTH, Constants.VisionUpCam.Simulated.HEIGHT, Constants.VisionUpCam.Simulated.FOV);
@@ -312,16 +326,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             });
         }
 
-        var visionDownEst = visionDown.getEstimatedGlobalPose();
-        var visionUpEst = visionUp.getEstimatedGlobalPose();
-            visionDownEst.ifPresent(
-                est -> {
-                    // Hours wasted because CTRE decided to use FPGA Time: 5
-                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
-                        est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
-                    ), VecBuilder.fill(0.1, 0.1, 0.9));
-            });
+        var visionDown1Est = visionDown1.getEstimatedGlobalPose();
+        var visionDown2Est = visionDown2.getEstimatedGlobalPose();
+        
+        visionDown1Est.ifPresent(
+            est -> {
+                // Hours wasted because CTRE decided to use FPGA Time: 5
+                this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
+                    est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
+                ), VecBuilder.fill(0.1, 0.1, 0.9));
+        });
+        visionDown2Est.ifPresent(
+            est -> {
+                // Hours wasted because CTRE decided to use FPGA Time: 5
+                this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
+                    est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
+                ), VecBuilder.fill(0.1, 0.1, 0.9));
+        });
+
         if (RobotState.isDisabled()) {
+            var visionUpEst = visionUp.getEstimatedGlobalPose();
+
             visionUpEst.ifPresent(
                 est -> {
                     // Hours wasted because CTRE decided to use FPGA Time: 5

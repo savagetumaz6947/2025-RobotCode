@@ -26,8 +26,8 @@ public class ReefSelector {
 
         // Capital A has the ASCII code 65. int 65/2 = 32.
         Pose2d aprilTagPose = alliance == Alliance.Red ?
-            Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.RED_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d() :
-            Constants.VisionDownCam.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.BLUE_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d();
+            Constants.VisionDown1Cam.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.RED_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d() :
+            Constants.VisionDown1Cam.APRIL_TAG_FIELD_LAYOUT.getTagPose(Constants.ReefSelector.BLUE_ALLIANCE_TAGS[(this.selectedReef - 1) / 2 - 32]).get().toPose2d();
 
         this.selectedPose = aprilTagPose.rotateAround(aprilTagPose.getTranslation(), Rotation2d.fromDegrees(180))
         // this.selectedPose = aprilTagPose
