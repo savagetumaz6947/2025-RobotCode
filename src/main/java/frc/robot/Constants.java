@@ -55,8 +55,8 @@ public class Constants {
         // TU12 says that the Taiwan regional will use the AndyMark field
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout
                 .loadField(AprilTagFields.k2025ReefscapeWelded);
-        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.255, 0.175, 0.815),
-                new Rotation3d(Degrees.of(0), Degrees.of(30), Degrees.of(180)));
+        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, -0.075, 0.202),
+                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(160)));
 
         public static class Simulated {
             public static final int WIDTH = 1280;
@@ -71,8 +71,8 @@ public class Constants {
         // TU12 says that the Taiwan regional will use the AndyMark field
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout
                 .loadField(AprilTagFields.k2025ReefscapeWelded);
-        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.255, 0.175, 0.815),
-                new Rotation3d(Degrees.of(0), Degrees.of(30), Degrees.of(180)));
+        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, -0.145, 0.202),
+                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(200)));
 
         public static class Simulated {
             public static final int WIDTH = 1280;
@@ -87,7 +87,7 @@ public class Constants {
         // TU12 says that the Taiwan regional will use the AndyMark field
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout
                 .loadField(AprilTagFields.k2025ReefscapeWelded);
-        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.265, 0.175, 0.895),
+        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, 0.175, 0.895),
                 new Rotation3d(Degrees.of(0), Degrees.of(-25), Degrees.of(180)));
 
         public static class Simulated {
@@ -97,14 +97,15 @@ public class Constants {
             public static final int FPS = 30;
         }
     }
+        
 
     public static class ReefSelector {
         // Apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.
         // X_OFFSET should always be negative (away from the tag).
-        public static Distance X_OFFSET = Meters.of(-0.60);
+        public static Distance X_OFFSET = Meters.of(-0.47);//-0.60
    
         // LEFT_Y_OFFSET is assumed to be positive (LEFT reef). The reason for this is that A1, the default scoring location, is on the left.
-        public static Distance LEFT_Y_OFFSET = Meters.of(0.16);//17
+        public static Distance LEFT_Y_OFFSET = Meters.of(0.34);//16
         public static Distance RIGHT_Y_OFFSET = Meters.of(-0.16);//-16
 
         // These are the AprilTag IDs of the desired scoring locations.

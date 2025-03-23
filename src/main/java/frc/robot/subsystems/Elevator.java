@@ -72,7 +72,7 @@ public class Elevator extends SubsystemBase {
 
         locationsMap.put(ElevatorLocation.BOTTOM, 2.0);
         locationsMap.put(ElevatorLocation.MID, 13.5);
-        locationsMap.put(ElevatorLocation.TOP, 31.0);
+        locationsMap.put(ElevatorLocation.TOP, 32.0);
         locationsMap.put(ElevatorLocation.ALGAE, 20.0);
         locationsMap.put(ElevatorLocation.SOURCE, 6.0);
         locationsMap.put(ElevatorLocation.DOWNINTAKE, 5.0);
