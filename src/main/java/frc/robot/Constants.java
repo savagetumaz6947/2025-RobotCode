@@ -57,6 +57,9 @@ public class Constants {
                 .loadField(AprilTagFields.k2025ReefscapeWelded);
         public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, -0.075, 0.202),
                 new Rotation3d(Degrees.of(0), Degrees.of(-12), Degrees.of(160)));
+        // Distance from camera to tag
+        public static final Distance MAX_DISTANCE = Meters.of(1);
+        public static final double MAX_AMBIGUITY = 0.15;
 
         public static class Simulated {
             public static final int WIDTH = 1280;
@@ -73,6 +76,9 @@ public class Constants {
                 .loadField(AprilTagFields.k2025ReefscapeWelded);
         public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, -0.145, 0.202),
                 new Rotation3d(Degrees.of(0), Degrees.of(-12), Degrees.of(200)));//angle0to-12
+        // Distance from camera to tag
+        public static final Distance MAX_DISTANCE = Meters.of(1);
+        public static final double MAX_AMBIGUITY = 0.15;
 
         public static class Simulated {
             public static final int WIDTH = 1280;
@@ -81,23 +87,6 @@ public class Constants {
             public static final int FPS = 30;
         }
     }
-
-    public static class VisionUpCam {
-        public static final String CAMERA_NAME = "UpCam";
-        // TU12 says that the Taiwan regional will use the AndyMark field
-        public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout
-                .loadField(AprilTagFields.k2025ReefscapeWelded);
-        public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, 0.175, 0.895),
-                new Rotation3d(Degrees.of(0), Degrees.of(-25), Degrees.of(180)));
-
-        public static class Simulated {
-            public static final int WIDTH = 1280;
-            public static final int HEIGHT = 800;
-            public static final Rotation2d FOV = Rotation2d.fromDegrees(60);
-            public static final int FPS = 30;
-        }
-    }
-        
 
     public static class ReefSelector {
         // Apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.

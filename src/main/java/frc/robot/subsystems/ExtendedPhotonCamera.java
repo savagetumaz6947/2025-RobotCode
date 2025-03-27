@@ -1,22 +1,25 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.units.measure.Distance;
 
 public class ExtendedPhotonCamera {
     private PhotonCamera camera;
     private PhotonPoseEstimator photonEstimator;
+    private Distance maxDistance;
+    private double maxAmbiguity;
 
     /**
      * Constructs a ExtendedPhotonCamera object with no transformation (primarily for use with Object Detection)
@@ -32,7 +35,7 @@ public class ExtendedPhotonCamera {
      * @param robotToCam The location of the camera relative to the robot center
      */
     public ExtendedPhotonCamera(String cameraName, Transform3d robotToCam) {
-        this(cameraName, robotToCam, AprilTagFields.kDefaultField.loadAprilTagLayoutField());
+        this(cameraName, robotToCam, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField), Meters.of(1), 0.15);
     }
 
     /**
@@ -40,27 +43,16 @@ public class ExtendedPhotonCamera {
      * @param cameraName The name of the PhotonCamera
      * @param robotToCam The location of the camera relative to the robot center
      * @param aprilTagFieldLayout The custom AprilTagFieldLayout
+     * @param maxDistance The maximum accepted distance from the camera to the "best" AprilTag.
+     * @param maxAmbiguity The maximum accepted ambiguity from the camera to the "best" AprilTag.
      */
-    public ExtendedPhotonCamera(String cameraName, Transform3d robotToCam, AprilTagFieldLayout aprilTagFieldLayout) {
+    public ExtendedPhotonCamera(String cameraName, Transform3d robotToCam, AprilTagFieldLayout aprilTagFieldLayout,
+        Distance maxDistance, double maxAmbiguity) {
         camera = new PhotonCamera(cameraName);
         photonEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCam);
         photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-    }
-
-    /**
-     * Returns whether the camera pipeline has targets. Will call getLatestResult.
-     * @return Whether the camera pipeline has targets
-     */
-    public boolean hasTargets() {
-        return camera.getLatestResult().hasTargets();
-    }
-
-    public PhotonTrackedTarget getBestTarget() {
-        return camera.getLatestResult().getBestTarget();
-    }
-
-    public void setLastPose(Pose2d pose) {
-        photonEstimator.setLastPose(pose);
+        this.maxDistance = maxDistance;
+        this.maxAmbiguity = maxAmbiguity;
     }
 
     public PhotonCamera getCamera() {
@@ -74,11 +66,22 @@ public class ExtendedPhotonCamera {
      * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
      *     used for estimation.
      */
-    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
+    public Optional<EstimatedRobotPose> getEstimatedGlobalPose(boolean overrideCheck) {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
+
         for (var res : camera.getAllUnreadResults()) {
-            visionEst = photonEstimator.update(res);
+            Optional<EstimatedRobotPose> photonPose = photonEstimator.update(res);
+
+            if (photonPose.isPresent()) {
+                double tag0Dist = res.getBestTarget().bestCameraToTarget.getTranslation().getNorm();
+                double poseAmbaguitiy = res.getBestTarget().getPoseAmbiguity();
+
+                if (overrideCheck || (tag0Dist < maxDistance.in(Meters) && poseAmbaguitiy < maxAmbiguity)) {
+                    visionEst = photonPose;
+                }
+            }
         }
+
         return visionEst;
     }
 }

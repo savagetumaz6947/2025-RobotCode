@@ -49,14 +49,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private RobotConfig config;
 
-    private ExtendedPhotonCamera visionDown1 = new ExtendedPhotonCamera(Constants.VisionDown1Cam.CAMERA_NAME, Constants.VisionDown1Cam.ROBOT_TO_CAM, Constants.VisionDown1Cam.APRIL_TAG_FIELD_LAYOUT);
-    private ExtendedPhotonCamera visionDown2 = new ExtendedPhotonCamera(Constants.VisionDown2Cam.CAMERA_NAME, Constants.VisionDown2Cam.ROBOT_TO_CAM, Constants.VisionDown2Cam.APRIL_TAG_FIELD_LAYOUT);
-    private ExtendedPhotonCamera visionUp = new ExtendedPhotonCamera(Constants.VisionUpCam.CAMERA_NAME, Constants.VisionUpCam.ROBOT_TO_CAM, Constants.VisionUpCam.APRIL_TAG_FIELD_LAYOUT);
+    private ExtendedPhotonCamera visionDown1 = new ExtendedPhotonCamera(Constants.VisionDown1Cam.CAMERA_NAME,
+        Constants.VisionDown1Cam.ROBOT_TO_CAM, Constants.VisionDown1Cam.APRIL_TAG_FIELD_LAYOUT,
+        Constants.VisionDown1Cam.MAX_DISTANCE, Constants.VisionDown1Cam.MAX_AMBIGUITY);
+    private ExtendedPhotonCamera visionDown2 = new ExtendedPhotonCamera(Constants.VisionDown2Cam.CAMERA_NAME,
+        Constants.VisionDown2Cam.ROBOT_TO_CAM, Constants.VisionDown2Cam.APRIL_TAG_FIELD_LAYOUT,
+        Constants.VisionDown2Cam.MAX_DISTANCE, Constants.VisionDown2Cam.MAX_AMBIGUITY);
 
     private VisionSystemSim visionSim;
     private PhotonCameraSim cameraDown1Sim;
     private PhotonCameraSim cameraDown2Sim;
-    private PhotonCameraSim cameraUpSim;
 
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
@@ -284,20 +286,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         visionSim.addCamera(cameraDown1Sim, Constants.VisionDown1Cam.ROBOT_TO_CAM);
         visionSim.addCamera(cameraDown2Sim, Constants.VisionDown2Cam.ROBOT_TO_CAM);
-
-        SimCameraProperties cameraUpProperties = new SimCameraProperties();
-        cameraUpProperties.setCalibration(Constants.VisionUpCam.Simulated.WIDTH, Constants.VisionUpCam.Simulated.HEIGHT, Constants.VisionUpCam.Simulated.FOV);
-        cameraUpProperties.setCalibError(0.01, 0.08);
-        cameraUpProperties.setFPS(Constants.VisionUpCam.Simulated.FPS);
-        cameraUpProperties.setAvgLatencyMs(35);
-        cameraUpProperties.setLatencyStdDevMs(5);
-        cameraUpSim = new PhotonCameraSim(visionUp.getCamera(), cameraUpProperties);
-
-        cameraUpSim.enableRawStream(true);
-        cameraUpSim.enableProcessedStream(true);
-        cameraUpSim.enableDrawWireframe(true);
-
-        visionSim.addCamera(cameraUpSim, Constants.VisionUpCam.ROBOT_TO_CAM);
     }
 
     @Override
@@ -326,9 +314,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             });
         }
 
-        var visionDown1Est = visionDown1.getEstimatedGlobalPose();
-        var visionDown2Est = visionDown2.getEstimatedGlobalPose();
-        
+        // Override checks if disabled (allow all pose estimations if disabled)
+        var visionDown1Est = visionDown1.getEstimatedGlobalPose(RobotState.isDisabled());
+        var visionDown2Est = visionDown2.getEstimatedGlobalPose(RobotState.isDisabled());
+
         visionDown1Est.ifPresent(
             est -> {
                 // Hours wasted because CTRE decided to use FPGA Time: 5
@@ -343,18 +332,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
                 ), VecBuilder.fill(0.1, 0.1, 0.9));
         });
-
-        if (RobotState.isDisabled()) {
-            var visionUpEst = visionUp.getEstimatedGlobalPose();
-
-            visionUpEst.ifPresent(
-                est -> {
-                    // Hours wasted because CTRE decided to use FPGA Time: 5
-                    this.addVisionMeasurement(est.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(
-                        est.timestampSeconds > Timer.getFPGATimestamp() ? Timer.getFPGATimestamp() : est.timestampSeconds
-                    ), VecBuilder.fill(0.1, 0.1, 0.9));
-            });
-        }
 
         field2d.setRobotPose(this.getState().Pose);
     }
