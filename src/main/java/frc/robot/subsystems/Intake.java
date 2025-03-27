@@ -29,7 +29,7 @@ public class Intake extends SubsystemBase {
     private SparkMaxSim motorSim;
 
     public enum IntakeState {
-        IN, OUT, DEFAULT, TEST
+        IN, OUT, DEFAULT, TEST, L1
     };
 
     private Map<IntakeState, Double> stateMap = new HashMap<>();
@@ -46,7 +46,8 @@ public class Intake extends SubsystemBase {
 
         stateMap.put(IntakeState.DEFAULT, 0.5);
         stateMap.put(IntakeState.IN, 12.0);
-        stateMap.put(IntakeState.OUT, -2.5);
+        stateMap.put(IntakeState.OUT, -1.5);
+        stateMap.put(IntakeState.L1, -2.0);
         
         this.setDefaultCommand(this.set(IntakeState.DEFAULT).repeatedly());
 

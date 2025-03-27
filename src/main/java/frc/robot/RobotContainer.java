@@ -36,10 +36,6 @@ import frc.robot.subsystems.LedStrip;
 import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.TubeLed;
-import frc.robot.subsystems.AlgaeIntake.AlgaeIntakeState;
-import frc.robot.subsystems.AlgaePivot.AlgaePivotLocation;
-import frc.robot.subsystems.AlgaeIntake;
-import frc.robot.subsystems.AlgaePivot;
 import frc.robot.subsystems.Pivot.PivotLocation;
 import frc.robot.utils.ExtendedController;
 import frc.robot.utils.ReefSelector;
@@ -75,8 +71,6 @@ public class RobotContainer {
     private final Arm arm = new Arm();
     private final Pivot pivot = new Pivot();
     private final Intake intake = new Intake();
-    private final AlgaeIntake algaeIntake = new AlgaeIntake();
-    private final AlgaePivot algaePivot = new AlgaePivot();
     private final LedStrip ledStrip = new LedStrip(() -> elevator.getHeight());
     private final TubeLed tubeLed = new TubeLed();
     private final Climber climber = new Climber();
@@ -165,7 +159,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("ReturnToIntakePosition", toIntakePosition);
 
-        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(1));
+        NamedCommands.registerCommand("GetCoral", intake.set(IntakeState.IN).repeatedly().withTimeout(0.5));
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -224,7 +218,7 @@ public class RobotContainer {
         climber.setDefaultCommand(climber.setVoltageCommand(() -> operator.getRightY()));
 
         joystick.rightTrigger().onTrue(Commands.runOnce(() -> {
-            speedSupplier = () -> MaxSpeed * 0.4;
+            speedSupplier = () -> MaxSpeed * 0.55;
         }));
         joystick.rightTrigger().onFalse(Commands.runOnce(() -> {
             speedSupplier = () -> MaxSpeed * 0.2; // default speed is 20% theoretical max speed
@@ -281,16 +275,8 @@ public class RobotContainer {
             elevator.set(ElevatorLocation.BOTTOM)
         ));  
 
-        operator.rightTrigger().whileTrue(Commands.parallel(
-            algaeIntake.set(AlgaeIntakeState.IN).repeatedly(),
-            algaePivot.set(AlgaePivotLocation.INTAKE)
-        ));
-        operator.leftTrigger().whileTrue(Commands.parallel(
-            algaeIntake.set(AlgaeIntakeState.OUT).repeatedly(),
-            algaePivot.set(AlgaePivotLocation.DEFAULT)
-        ));
 
-        operator.b().onTrue(intake.set(IntakeState.OUT).repeatedly().withTimeout(0.6));
+        operator.b().onTrue(intake.set(IntakeState.L1).repeatedly().withTimeout(0.6));
 
         /* operator.rightBumper().onTrue(Commands.sequence(
             elevator.set(ElevatorLocation.ALGAE),
@@ -302,7 +288,6 @@ public class RobotContainer {
         operator.rightBumper().onTrue(Commands.parallel(
             arm.set(ArmLocation.CLIMB),
             pivot.set(PivotLocation.INTAKE),
-            algaePivot.set(AlgaePivotLocation.INTAKE),
             elevator.set(ElevatorLocation.BOTTOM)
         ));
 

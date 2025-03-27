@@ -11,13 +11,46 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "PutArmSafe"
+                  "name": "PutI4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "SPIT"
                 }
               },
               {
-                "type": "path",
+                "type": "sequential",
                 "data": {
-                  "pathName": "ExitToJI"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.3
+                      }
+                    },
+                    {
+                      "type": "parallel",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "IJtoSource"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -26,7 +59,13 @@
         {
           "type": "named",
           "data": {
-            "name": "PutI4"
+            "name": "GetCoral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PutK4"
           }
         },
         {
@@ -52,7 +91,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "IJtoSource"
+                        "pathName": "LKtoSource"
                       }
                     }
                   ]
@@ -70,13 +109,7 @@
         {
           "type": "named",
           "data": {
-            "name": "PutK4"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "SourcetoLK"
+            "name": "PutL4"
           }
         },
         {
@@ -96,7 +129,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.3
+                        "waitTime": 0.25
                       }
                     },
                     {

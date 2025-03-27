@@ -26,27 +26,27 @@ public class Constants {
         public static final PPHolonomicDriveController PP_HOLONOMIC_DRIVE_CONTROLLER = new PPHolonomicDriveController(
             // PPHolonomicController is the built in path following controller for holonomic drive trains.
             // This does not affect DriveToPose.
-            new PIDConstants(3.5, 0.0, 0.0), // Translation PID constants500
-            new PIDConstants(2.8, 0.0, 0.0) // Rotation PID constants500
+            new PIDConstants(5, 0.0, 0.0), // Translation PID constants500
+            new PIDConstants(2.5, 0.0, 0.0) // Rotation PID constants500
         );
 
         public static class DriveToPose {
             // Whether to use PPLib in the driveToPose() function.
             public static final boolean USE_PPLIB = false;
             // This constraint is used in the driveToPose() function by PPLib AND PIDControl.
-            public static final PathConstraints CONSTRAINTS = new PathConstraints(1.5, 1.5, 180,
+            public static final PathConstraints CONSTRAINTS = new PathConstraints(2.5, 1.5, 180,
                     240, 12, false);// 2.2
 
             // These constraints are solely used in the driveToPose() function by PIDControl.
-            public static final double TRANSLATION_kP = 5.0;//10
+            public static final double TRANSLATION_kP = 2.3;//10
             public static final double TRANSLATION_kI = 0.0;//.5
-            public static final double TRANSLATION_kD = 0.0;//0ㄌ
-            public static final double TRANSLATION_TOLERANCE = 0.01;//0.02
+            public static final double TRANSLATION_kD = 0.0;//0
+            public static final double TRANSLATION_TOLERANCE = 0.04;//0.02
 
-            public static final double ROTATION_kP = 2.5;//3
+            public static final double ROTATION_kP = 1;//3
             public static final double ROTATION_kI = 0.0;
             public static final double ROTATION_kD = 0.0;//0
-            public static final double ROTATION_TOLERANCE = Units.degreesToRadians(2.0);//2
+            public static final double ROTATION_TOLERANCE = Units.degreesToRadians(2.5);//2
         }
     }
 
@@ -56,7 +56,7 @@ public class Constants {
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout
                 .loadField(AprilTagFields.k2025ReefscapeWelded);
         public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, -0.075, 0.202),
-                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(160)));
+                new Rotation3d(Degrees.of(0), Degrees.of(-12), Degrees.of(160)));
 
         public static class Simulated {
             public static final int WIDTH = 1280;
@@ -72,7 +72,7 @@ public class Constants {
         public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = AprilTagFieldLayout
                 .loadField(AprilTagFields.k2025ReefscapeWelded);
         public static final Transform3d ROBOT_TO_CAM = new Transform3d(new Translation3d(-0.300, -0.145, 0.202),
-                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(200)));
+                new Rotation3d(Degrees.of(0), Degrees.of(-12), Degrees.of(200)));//angle0to-12
 
         public static class Simulated {
             public static final int WIDTH = 1280;
@@ -102,11 +102,11 @@ public class Constants {
     public static class ReefSelector {
         // Apriltag-relative offsets used to calculate the robot's desired Pose when scoring from its AprilTag.
         // X_OFFSET should always be negative (away from the tag).
-        public static Distance X_OFFSET = Meters.of(-0.47);//-0.60
+        public static Distance X_OFFSET = Meters.of(-0.55);//-0.60
    
         // LEFT_Y_OFFSET is assumed to be positive (LEFT reef). The reason for this is that A1, the default scoring location, is on the left.
-        public static Distance LEFT_Y_OFFSET = Meters.of(0.34);//16
-        public static Distance RIGHT_Y_OFFSET = Meters.of(-0.16);//-16
+        public static Distance LEFT_Y_OFFSET = Meters.of(0.08);//16
+        public static Distance RIGHT_Y_OFFSET = Meters.of(-0.29);//-16
 
         // These are the AprilTag IDs of the desired scoring locations.
         // A-B shares one AprilTag, C-D shares one AprilTag, and so on.
